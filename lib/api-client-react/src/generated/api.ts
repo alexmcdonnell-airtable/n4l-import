@@ -23,6 +23,7 @@ import type {
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
+  InviteStaffBody,
   LogoutSuccess,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
@@ -1143,7 +1144,7 @@ export const useResetSchoolToken = <
 };
 
 /**
- * @summary List all staff users
+ * @summary List all staff users (including invited-only allowlist entries)
  */
 export const getListStaffUrl = () => {
   return `/api/staff`;
@@ -1190,7 +1191,7 @@ export type ListStaffQueryResult = NonNullable<
 export type ListStaffQueryError = ErrorType<ErrorEnvelope>;
 
 /**
- * @summary List all staff users
+ * @summary List all staff users (including invited-only allowlist entries)
  */
 
 export function useListStaff<
@@ -1208,6 +1209,92 @@ export function useListStaff<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Add a staff member to the allowlist (admin only)
+ */
+export const getInviteStaffUrl = () => {
+  return `/api/staff`;
+};
+
+export const inviteStaff = async (
+  inviteStaffBody: InviteStaffBody,
+  options?: RequestInit,
+): Promise<StaffMember> => {
+  return customFetch<StaffMember>(getInviteStaffUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(inviteStaffBody),
+  });
+};
+
+export const getInviteStaffMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inviteStaff>>,
+    TError,
+    { data: BodyType<InviteStaffBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof inviteStaff>>,
+  TError,
+  { data: BodyType<InviteStaffBody> },
+  TContext
+> => {
+  const mutationKey = ["inviteStaff"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof inviteStaff>>,
+    { data: BodyType<InviteStaffBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return inviteStaff(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type InviteStaffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof inviteStaff>>
+>;
+export type InviteStaffMutationBody = BodyType<InviteStaffBody>;
+export type InviteStaffMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Add a staff member to the allowlist (admin only)
+ */
+export const useInviteStaff = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof inviteStaff>>,
+    TError,
+    { data: BodyType<InviteStaffBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof inviteStaff>>,
+  TError,
+  { data: BodyType<InviteStaffBody> },
+  TContext
+> => {
+  return useMutation(getInviteStaffMutationOptions(options));
+};
 
 /**
  * @summary Update a staff member's role or active status (admin only)
@@ -1294,6 +1381,90 @@ export const useUpdateStaff = <
   TContext
 > => {
   return useMutation(getUpdateStaffMutationOptions(options));
+};
+
+/**
+ * @summary Remove a staff member from the allowlist and system (admin only)
+ */
+export const getRemoveStaffUrl = (id: string) => {
+  return `/api/staff/${id}`;
+};
+
+export const removeStaff = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveStaffUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveStaffMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeStaff>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeStaff>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["removeStaff"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeStaff>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return removeStaff(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveStaffMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeStaff>>
+>;
+
+export type RemoveStaffMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Remove a staff member from the allowlist and system (admin only)
+ */
+export const useRemoveStaff = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeStaff>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeStaff>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getRemoveStaffMutationOptions(options));
 };
 
 /**

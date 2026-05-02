@@ -6,6 +6,7 @@
  * OpenAPI spec version: 0.1.0
  */
 import type { StaffMemberRole } from "./staffMemberRole";
+import type { StaffMemberStatus } from "./staffMemberStatus";
 
 export interface StaffMember {
   id: string;
@@ -19,6 +20,7 @@ export interface StaffMember {
   profileImageUrl: string | null;
   role: StaffMemberRole;
   active: boolean;
+  status: StaffMemberStatus;
   /** @nullable */
   lastLoginAt: Date | null;
   createdAt: Date;

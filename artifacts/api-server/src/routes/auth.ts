@@ -18,7 +18,13 @@ import {
   ISSUER_URL,
   type SessionData,
 } from "../lib/auth";
-import { ensureStaffProfile, getStaffProfile } from "../lib/staff";
+import {
+  ensureStaffProfile,
+  getStaffProfile,
+  checkAllowlist,
+  isBootstrapMode,
+  migrateExistingProfilesToAllowlist,
+} from "../lib/staff";
 
 const OIDC_COOKIE_TTL = 10 * 60 * 1000;
 
@@ -174,11 +180,30 @@ router.get("/callback", async (req: Request, res: Response) => {
     return;
   }
 
+  const incomingEmail = (claims.email as string | undefined) || null;
+
+  // Migrate existing profiles to allowlist if needed (one-time migration)
+  await migrateExistingProfilesToAllowlist();
+
+  // Allowlist gate: check if the user is allowed before creating any records
+  const bootstrap = await isBootstrapMode();
+  if (!bootstrap && incomingEmail) {
+    const allowlistEntry = await checkAllowlist(incomingEmail);
+    if (!allowlistEntry) {
+      res.redirect("/unauthorized");
+      return;
+    }
+  } else if (!bootstrap && !incomingEmail) {
+    // No email claim and not bootstrap → cannot verify allowlist
+    res.redirect("/unauthorized");
+    return;
+  }
+
   const dbUser = await upsertUser(
     claims as unknown as Record<string, unknown>,
   );
 
-  const profile = await ensureStaffProfile(dbUser.id);
+  const profile = await ensureStaffProfile(dbUser.id, incomingEmail);
   if (!profile || !profile.active) {
     res.redirect("/?error=deactivated");
     return;
@@ -250,11 +275,29 @@ router.post(
         return;
       }
 
+      const incomingEmail = (claims.email as string | undefined) || null;
+
+      // Migrate existing profiles to allowlist if needed (one-time migration)
+      await migrateExistingProfilesToAllowlist();
+
+      // Allowlist gate
+      const bootstrap = await isBootstrapMode();
+      if (!bootstrap && incomingEmail) {
+        const allowlistEntry = await checkAllowlist(incomingEmail);
+        if (!allowlistEntry) {
+          res.status(403).json({ error: "You are not authorized to access this portal" });
+          return;
+        }
+      } else if (!bootstrap && !incomingEmail) {
+        res.status(403).json({ error: "You are not authorized to access this portal" });
+        return;
+      }
+
       const dbUser = await upsertUser(
         claims as unknown as Record<string, unknown>,
       );
 
-      const profile = await ensureStaffProfile(dbUser.id);
+      const profile = await ensureStaffProfile(dbUser.id, incomingEmail);
       if (!profile || !profile.active) {
         res.status(403).json({ error: "Account is deactivated" });
         return;

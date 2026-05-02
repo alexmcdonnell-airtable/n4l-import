@@ -77,7 +77,7 @@ export interface School {
   address: string | null;
   /** @nullable */
   notes: string | null;
-  /** Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference). */
+  /** Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token). */
   accessUrl: string;
   tokenLastResetAt: string;
   createdAt: string;
@@ -136,6 +136,15 @@ export const StaffMemberRole = {
   staff: "staff",
 } as const;
 
+export type StaffMemberStatus =
+  (typeof StaffMemberStatus)[keyof typeof StaffMemberStatus];
+
+export const StaffMemberStatus = {
+  invited: "invited",
+  active: "active",
+  inactive: "inactive",
+} as const;
+
 export interface StaffMember {
   id: string;
   /** @nullable */
@@ -148,6 +157,7 @@ export interface StaffMember {
   profileImageUrl: string | null;
   role: StaffMemberRole;
   active: boolean;
+  status: StaffMemberStatus;
   /** @nullable */
   lastLoginAt: string | null;
   createdAt: string;
@@ -164,6 +174,20 @@ export const UpdateStaffBodyRole = {
 export interface UpdateStaffBody {
   role?: UpdateStaffBodyRole;
   active?: boolean;
+}
+
+export type InviteStaffBodyRole =
+  (typeof InviteStaffBodyRole)[keyof typeof InviteStaffBodyRole];
+
+export const InviteStaffBodyRole = {
+  admin: "admin",
+  staff: "staff",
+} as const;
+
+export interface InviteStaffBody {
+  /** @minLength 1 */
+  email: string;
+  role: InviteStaffBodyRole;
 }
 
 /**

@@ -118,7 +118,7 @@ export const ListSchoolsResponseItem = zod.object({
   accessUrl: zod
     .string()
     .describe(
-      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+      "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
   createdAt: zod.coerce.date(),
@@ -168,7 +168,7 @@ export const GetSchoolResponse = zod.object({
   accessUrl: zod
     .string()
     .describe(
-      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+      "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
   createdAt: zod.coerce.date(),
@@ -207,7 +207,7 @@ export const UpdateSchoolResponse = zod.object({
   accessUrl: zod
     .string()
     .describe(
-      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+      "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
   createdAt: zod.coerce.date(),
@@ -253,7 +253,7 @@ export const ResetSchoolTokenResponse = zod
     accessUrl: zod
       .string()
       .describe(
-        "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+        "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
       ),
     tokenLastResetAt: zod.coerce.date(),
     createdAt: zod.coerce.date(),
@@ -268,7 +268,7 @@ export const ResetSchoolTokenResponse = zod
   );
 
 /**
- * @summary List all staff users
+ * @summary List all staff users (including invited-only allowlist entries)
  */
 export const ListStaffHeader = zod.object({
   Authorization: zod
@@ -285,10 +285,26 @@ export const ListStaffResponseItem = zod.object({
   profileImageUrl: zod.string().nullable(),
   role: zod.enum(["admin", "staff"]),
   active: zod.boolean(),
+  status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),
   createdAt: zod.coerce.date(),
 });
 export const ListStaffResponse = zod.array(ListStaffResponseItem);
+
+/**
+ * @summary Add a staff member to the allowlist (admin only)
+ */
+export const InviteStaffHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const InviteStaffBody = zod.object({
+  email: zod.string().email().min(1),
+  role: zod.enum(["admin", "staff"]),
+});
 
 /**
  * @summary Update a staff member's role or active status (admin only)
@@ -317,8 +333,23 @@ export const UpdateStaffResponse = zod.object({
   profileImageUrl: zod.string().nullable(),
   role: zod.enum(["admin", "staff"]),
   active: zod.boolean(),
+  status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),
   createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Remove a staff member from the allowlist and system (admin only)
+ */
+export const RemoveStaffParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const RemoveStaffHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
 });
 
 /**

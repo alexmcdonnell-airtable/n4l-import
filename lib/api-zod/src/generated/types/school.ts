@@ -17,7 +17,7 @@ export interface School {
   address: string | null;
   /** @nullable */
   notes: string | null;
-  /** Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference). */
+  /** Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token). */
   accessUrl: string;
   tokenLastResetAt: Date;
   createdAt: Date;

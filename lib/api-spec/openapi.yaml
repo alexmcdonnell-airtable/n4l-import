@@ -310,7 +310,7 @@ paths:
     get:
       tags: [Staff]
       operationId: listStaff
-      summary: List all staff users
+      summary: List all staff users (including invited-only allowlist entries)
       parameters:
         - $ref: '#/components/parameters/AuthorizationSessionHeader'
         - $ref: '#/components/parameters/SessionCookie'
@@ -325,6 +325,38 @@ paths:
                   $ref: '#/components/schemas/StaffMember'
         '401':
           description: Unauthorized.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    post:
+      tags: [Staff]
+      operationId: inviteStaff
+      summary: Add a staff member to the allowlist (admin only)
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InviteStaffBody'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StaffMember'
+        '400':
+          description: Bad request.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '403':
+          description: Forbidden.
           content:
             application/json:
               schema:
@@ -355,6 +387,33 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StaffMember'
+        '403':
+          description: Forbidden.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      tags: [Staff]
+      operationId: removeStaff
+      summary: Remove a staff member from the allowlist and system (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Removed.
         '403':
           description: Forbidden.
           content:
@@ -547,6 +606,7 @@ components:
         - profileImageUrl
         - role
         - active
+        - status
         - lastLoginAt
         - createdAt
       properties:
@@ -559,6 +619,9 @@ components:
           type: string
           enum: [admin, staff]
         active: { type: boolean }
+        status:
+          type: string
+          enum: [invited, active, inactive]
         lastLoginAt: { type: [string, 'null'], format: date-time }
         createdAt: { type: string, format: date-time }
     UpdateStaffBody:
@@ -568,3 +631,14 @@ components:
           type: string
           enum: [admin, staff]
         active: { type: boolean }
+    InviteStaffBody:
+      type: object
+      required: [email, role]
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        role:
+          type: string
+          enum: [admin, staff]

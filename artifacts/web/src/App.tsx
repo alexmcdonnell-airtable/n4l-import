@@ -8,6 +8,7 @@ import { AppShell } from "@/components/layout";
 import LoginPage from "@/pages/login";
 import DeactivatedPage from "@/pages/deactivated";
 import NoAccessPage from "@/pages/no-access";
+import UnauthorizedPage from "@/pages/unauthorized";
 import DashboardPage from "@/pages/dashboard";
 import SchoolsPage from "@/pages/schools";
 import StaffPage from "@/pages/staff";
@@ -64,6 +65,9 @@ function Router() {
     <Switch>
       <Route path="/s/:token">
         {(params) => <SchoolPortalPage token={params.token} />}
+      </Route>
+      <Route path="/unauthorized">
+        <UnauthorizedPage />
       </Route>
       <Route>
         <AuthProvider>
