@@ -8,3 +8,175 @@
 export interface HealthStatus {
   status: string;
 }
+
+export interface AuthUser {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+}
+
+/**
+ * @nullable
+ */
+export type AuthUserEnvelopeRole =
+  | (typeof AuthUserEnvelopeRole)[keyof typeof AuthUserEnvelopeRole]
+  | null;
+
+export const AuthUserEnvelopeRole = {
+  admin: "admin",
+  staff: "staff",
+} as const;
+
+export interface AuthUserEnvelope {
+  user: AuthUser | null;
+  /** @nullable */
+  role: AuthUserEnvelopeRole;
+  active: boolean;
+}
+
+export interface MobileTokenExchangeRequest {
+  /** @minLength 1 */
+  code: string;
+  /** @minLength 1 */
+  code_verifier: string;
+  /** @minLength 1 */
+  redirect_uri: string;
+  /** @minLength 1 */
+  state: string;
+  /** @minLength 1 */
+  nonce?: string;
+}
+
+export interface MobileTokenExchangeSuccess {
+  token: string;
+}
+
+export const LogoutSuccessValue = {
+  success: true,
+} as const;
+export type LogoutSuccess = typeof LogoutSuccessValue;
+
+export interface ErrorEnvelope {
+  error: string;
+}
+
+export interface School {
+  id: string;
+  name: string;
+  /** @nullable */
+  contactName: string | null;
+  /** @nullable */
+  contactEmail: string | null;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  notes: string | null;
+  /** Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference). */
+  accessUrl: string;
+  tokenLastResetAt: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type SchoolWithToken = School & {
+  /** Plain-text access token. Returned only on create or reset. */
+  accessToken: string;
+};
+
+export interface SchoolProfile {
+  id: string;
+  name: string;
+  /** @nullable */
+  contactName: string | null;
+  /** @nullable */
+  contactEmail: string | null;
+  /** @nullable */
+  address: string | null;
+  /** @nullable */
+  notes: string | null;
+}
+
+export interface CreateSchoolBody {
+  /** @minLength 1 */
+  name: string;
+  /** @nullable */
+  contactName?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export interface UpdateSchoolBody {
+  /** @minLength 1 */
+  name?: string;
+  /** @nullable */
+  contactName?: string | null;
+  /** @nullable */
+  contactEmail?: string | null;
+  /** @nullable */
+  address?: string | null;
+  /** @nullable */
+  notes?: string | null;
+}
+
+export type StaffMemberRole =
+  (typeof StaffMemberRole)[keyof typeof StaffMemberRole];
+
+export const StaffMemberRole = {
+  admin: "admin",
+  staff: "staff",
+} as const;
+
+export interface StaffMember {
+  id: string;
+  /** @nullable */
+  email: string | null;
+  /** @nullable */
+  firstName: string | null;
+  /** @nullable */
+  lastName: string | null;
+  /** @nullable */
+  profileImageUrl: string | null;
+  role: StaffMemberRole;
+  active: boolean;
+  /** @nullable */
+  lastLoginAt: string | null;
+  createdAt: string;
+}
+
+export type UpdateStaffBodyRole =
+  (typeof UpdateStaffBodyRole)[keyof typeof UpdateStaffBodyRole];
+
+export const UpdateStaffBodyRole = {
+  admin: "admin",
+  staff: "staff",
+} as const;
+
+export interface UpdateStaffBody {
+  role?: UpdateStaffBodyRole;
+  active?: boolean;
+}
+
+/**
+ * Opaque session token — `Bearer <sid>`.
+ */
+export type AuthorizationSessionHeaderParameter = string;
+
+export type BeginBrowserLoginParams = {
+  returnTo?: string;
+};
+
+export type HandleBrowserLoginCallbackParams = {
+  code?: string;
+  state?: string;
+  iss?: string;
+};

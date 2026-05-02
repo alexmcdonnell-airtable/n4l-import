@@ -14,3 +14,325 @@ import * as zod from "zod";
 export const HealthCheckResponse = zod.object({
   status: zod.string(),
 });
+
+/**
+ * @summary Get the currently authenticated user
+ */
+export const GetCurrentAuthUserHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetCurrentAuthUserResponse = zod.object({
+  user: zod.union([
+    zod.object({
+      id: zod.string(),
+      email: zod.string().email().nullable(),
+      firstName: zod.string().nullable(),
+      lastName: zod.string().nullable(),
+      profileImageUrl: zod.string().nullable(),
+    }),
+    zod.null(),
+  ]),
+  role: zod
+    .union([zod.literal("admin"), zod.literal("staff"), zod.literal(null)])
+    .nullable(),
+  active: zod.boolean(),
+});
+
+/**
+ * @summary Start the browser OIDC login flow
+ */
+export const BeginBrowserLoginQueryParams = zod.object({
+  returnTo: zod.coerce.string().optional(),
+});
+
+/**
+ * @summary Complete the browser OIDC login flow
+ */
+export const HandleBrowserLoginCallbackQueryParams = zod.object({
+  code: zod.coerce.string().optional(),
+  state: zod.coerce.string().optional(),
+  iss: zod.coerce.string().url().optional(),
+});
+
+/**
+ * @summary Clear the session and begin OIDC logout
+ */
+export const LogoutBrowserSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Exchange a mobile OIDC code for a session token
+ */
+
+export const ExchangeMobileAuthorizationCodeBody = zod.object({
+  code: zod.string().min(1),
+  code_verifier: zod.string().min(1),
+  redirect_uri: zod.string().url().min(1),
+  state: zod.string().min(1),
+  nonce: zod.string().min(1).optional(),
+});
+
+export const ExchangeMobileAuthorizationCodeResponse = zod.object({
+  token: zod.string(),
+});
+
+/**
+ * @summary Delete a mobile session token
+ */
+export const LogoutMobileSessionHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const LogoutMobileSessionResponse = zod.object({
+  success: zod.boolean(),
+});
+
+/**
+ * @summary List all schools
+ */
+export const ListSchoolsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const ListSchoolsResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  contactEmail: zod.string().email().nullable(),
+  address: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  accessUrl: zod
+    .string()
+    .describe(
+      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+    ),
+  tokenLastResetAt: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListSchoolsResponse = zod.array(ListSchoolsResponseItem);
+
+/**
+ * @summary Create a new school (returns one-time access token)
+ */
+export const CreateSchoolHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const CreateSchoolBody = zod.object({
+  name: zod.string().min(1),
+  contactName: zod.string().nullish(),
+  contactEmail: zod.string().email().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+/**
+ * @summary Get a school by id
+ */
+export const GetSchoolParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetSchoolHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetSchoolResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  contactEmail: zod.string().email().nullable(),
+  address: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  accessUrl: zod
+    .string()
+    .describe(
+      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+    ),
+  tokenLastResetAt: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a school's details
+ */
+export const UpdateSchoolParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateSchoolHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateSchoolBody = zod.object({
+  name: zod.string().min(1).optional(),
+  contactName: zod.string().nullish(),
+  contactEmail: zod.string().email().nullish(),
+  address: zod.string().nullish(),
+  notes: zod.string().nullish(),
+});
+
+export const UpdateSchoolResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  contactEmail: zod.string().email().nullable(),
+  address: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  accessUrl: zod
+    .string()
+    .describe(
+      "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+    ),
+  tokenLastResetAt: zod.coerce.date(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a school
+ */
+export const DeleteSchoolParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteSchoolHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Generate a new access token for the school (invalidates old)
+ */
+export const ResetSchoolTokenParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const ResetSchoolTokenHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const ResetSchoolTokenResponse = zod
+  .object({
+    id: zod.string(),
+    name: zod.string(),
+    contactName: zod.string().nullable(),
+    contactEmail: zod.string().email().nullable(),
+    address: zod.string().nullable(),
+    notes: zod.string().nullable(),
+    accessUrl: zod
+      .string()
+      .describe(
+        "Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).",
+      ),
+    tokenLastResetAt: zod.coerce.date(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  })
+  .and(
+    zod.object({
+      accessToken: zod
+        .string()
+        .describe("Plain-text access token. Returned only on create or reset."),
+    }),
+  );
+
+/**
+ * @summary List all staff users
+ */
+export const ListStaffHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const ListStaffResponseItem = zod.object({
+  id: zod.string(),
+  email: zod.string().email().nullable(),
+  firstName: zod.string().nullable(),
+  lastName: zod.string().nullable(),
+  profileImageUrl: zod.string().nullable(),
+  role: zod.enum(["admin", "staff"]),
+  active: zod.boolean(),
+  lastLoginAt: zod.coerce.date().nullable(),
+  createdAt: zod.coerce.date(),
+});
+export const ListStaffResponse = zod.array(ListStaffResponseItem);
+
+/**
+ * @summary Update a staff member's role or active status (admin only)
+ */
+export const UpdateStaffParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateStaffHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateStaffBody = zod.object({
+  role: zod.enum(["admin", "staff"]).optional(),
+  active: zod.boolean().optional(),
+});
+
+export const UpdateStaffResponse = zod.object({
+  id: zod.string(),
+  email: zod.string().email().nullable(),
+  firstName: zod.string().nullable(),
+  lastName: zod.string().nullable(),
+  profileImageUrl: zod.string().nullable(),
+  role: zod.enum(["admin", "staff"]),
+  active: zod.boolean(),
+  lastLoginAt: zod.coerce.date().nullable(),
+  createdAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Public — fetch a school's read-only profile by access token
+ */
+export const GetSchoolByTokenParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const GetSchoolByTokenResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  contactEmail: zod.string().email().nullable(),
+  address: zod.string().nullable(),
+  notes: zod.string().nullable(),
+});
