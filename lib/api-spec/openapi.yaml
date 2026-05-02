@@ -491,7 +491,7 @@ components:
         notes: { type: [string, 'null'] }
         accessUrl:
           type: string
-          description: Full shareable URL for the school portal (only available on read for admins; uses opaque server-side token reference).
+          description: Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).
         tokenLastResetAt: { type: string, format: date-time }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }

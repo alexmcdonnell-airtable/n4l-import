@@ -25,3 +25,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+
+## Security Notes
+
+- **School access tokens**: Plain-text tokens are stored in the `schools.access_token` DB column so staff can always copy the real portal link from the list view. The SHA-256 hash (`access_token_hash`) is still stored and used for portal token lookup/validation. Treat `access_token` as a low-sensitivity secret (read-only school profile access); rotate via the reset-link action if a token is compromised.
