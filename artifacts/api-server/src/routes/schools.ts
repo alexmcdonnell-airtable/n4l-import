@@ -25,16 +25,15 @@ interface SchoolRow {
   contactEmail: string | null;
   address: string | null;
   notes: string | null;
+  accessToken: string;
   accessTokenHash: string;
   tokenLastResetAt: Date;
   createdAt: Date;
   updatedAt: Date;
 }
 
-function serialize(req: Request, row: SchoolRow, plainToken?: string) {
-  const accessUrl = plainToken
-    ? buildAccessUrl(req, plainToken)
-    : buildAccessUrl(req, `••••••${row.accessTokenHash.slice(-4)}`);
+function serialize(req: Request, row: SchoolRow) {
+  const accessUrl = buildAccessUrl(req, row.accessToken);
   return {
     id: row.id,
     name: row.name,
@@ -79,12 +78,13 @@ router.post(
         contactEmail: parsed.data.contactEmail ?? null,
         address: parsed.data.address ?? null,
         notes: parsed.data.notes ?? null,
+        accessToken: token,
         accessTokenHash: hashAccessToken(token),
       })
       .returning();
     res
       .status(201)
-      .json({ ...serialize(req, row, token), accessToken: token });
+      .json({ ...serialize(req, row), accessToken: token });
   },
 );
 
@@ -182,6 +182,7 @@ router.post(
     const [row] = await db
       .update(schoolsTable)
       .set({
+        accessToken: token,
         accessTokenHash: hashAccessToken(token),
         tokenLastResetAt: new Date(),
       })
@@ -191,7 +192,7 @@ router.post(
       res.status(404).json({ error: "School not found" });
       return;
     }
-    res.json({ ...serialize(req, row, token), accessToken: token });
+    res.json({ ...serialize(req, row), accessToken: token });
   },
 );
 

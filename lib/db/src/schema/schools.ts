@@ -16,6 +16,7 @@ export const schoolsTable = pgTable(
     contactEmail: varchar("contact_email"),
     address: text("address"),
     notes: text("notes"),
+    accessToken: varchar("access_token").notNull().unique(),
     accessTokenHash: varchar("access_token_hash").notNull().unique(),
     tokenLastResetAt: timestamp("token_last_reset_at", { withTimezone: true })
       .notNull()
