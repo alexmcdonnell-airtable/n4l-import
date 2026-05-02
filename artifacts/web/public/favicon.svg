@@ -1,3 +1,16 @@
 <svg width="180" height="180" viewBox="0 0 180 180" fill="none" xmlns="http://www.w3.org/2000/svg">
-<rect width="180" height="180" rx="36" fill="#FF3C00"/>
+  <!-- Stem -->
+  <path d="M93 28 C93 20 100 12 108 10" stroke="#5C3317" stroke-width="5" stroke-linecap="round" fill="none"/>
+  <!-- Leaf -->
+  <ellipse cx="108" cy="22" rx="16" ry="9" fill="#4CAF50" transform="rotate(-30 108 22)"/>
+  <!-- Apple body -->
+  <path d="M90 42
+    C60 42 30 65 30 100
+    C30 135 55 165 90 165
+    C125 165 150 135 150 100
+    C150 65 120 42 90 42 Z" fill="#D32F2F"/>
+  <!-- Highlight -->
+  <ellipse cx="72" cy="80" rx="14" ry="20" fill="white" opacity="0.18" transform="rotate(-15 72 80)"/>
+  <!-- Indent at top -->
+  <path d="M90 42 C84 50 96 50 90 42 Z" fill="#B71C1C"/>
 </svg>
