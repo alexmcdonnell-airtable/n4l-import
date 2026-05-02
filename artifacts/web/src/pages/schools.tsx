@@ -148,11 +148,8 @@ export default function SchoolsPage() {
         await updateMut.mutateAsync({ id: editing.id, data: body });
         toast({ title: "School updated" });
       } else {
-        const created = await createMut.mutateAsync({ data: body });
-        setTokenDialog({
-          schoolName: created.name,
-          token: created.accessToken,
-        });
+        await createMut.mutateAsync({ data: body });
+        toast({ title: "School created" });
       }
       setCreateOpen(false);
       invalidate();
