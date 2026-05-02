@@ -12,4 +12,5 @@ export type StaffMemberRole =
 export const StaffMemberRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;

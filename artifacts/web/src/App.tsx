@@ -1,10 +1,16 @@
-import { Switch, Route, Router as WouterRouter } from "wouter";
+import { Switch, Route, Router as WouterRouter, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { AppShell } from "@/components/layout";
+import { RequireRole } from "@/components/require-role";
+import {
+  PAGES,
+  canAccessPath,
+  defaultPathForRole,
+} from "@/lib/roles";
 import LoginPage from "@/pages/login";
 import DeactivatedPage from "@/pages/deactivated";
 import NoAccessPage from "@/pages/no-access";
@@ -12,6 +18,7 @@ import UnauthorizedPage from "@/pages/unauthorized";
 import DashboardPage from "@/pages/dashboard";
 import SchoolsPage from "@/pages/schools";
 import StaffPage from "@/pages/staff";
+import InventoryPage from "@/pages/inventory";
 import SchoolPortalPage from "@/pages/school-portal";
 import ProductsPage from "@/pages/products";
 import MenuTemplatesPage from "@/pages/menu-templates";
@@ -25,11 +32,17 @@ const queryClient = new QueryClient({
   },
 });
 
-function AdminOnly({ children }: { children: React.ReactNode }) {
-  const { data } = useAuth();
-  if (data?.role !== "admin") return <NoAccessPage />;
-  return <>{children}</>;
-}
+const PAGE_COMPONENTS: Record<string, React.ComponentType> = {
+  dashboard: DashboardPage,
+  schools: SchoolsPage,
+  "school-defaults": SchoolDefaultsPage,
+  products: ProductsPage,
+  "menu-templates": MenuTemplatesPage,
+  staff: StaffPage,
+  inventory: InventoryPage,
+  orders: WeeklyOrdersPage,
+  settings: SettingsPage,
+};
 
 function PrivateRoutes() {
   const { data, isLoading } = useAuth();
@@ -45,41 +58,37 @@ function PrivateRoutes() {
   if (!data?.user) return <LoginPage />;
   if (!data.active) return <DeactivatedPage />;
 
+  const role = data.role;
+  const homePath = defaultPathForRole(role);
+
   return (
     <AppShell>
       <Switch>
-        <Route path="/" component={DashboardPage} />
-        <Route path="/orders" component={WeeklyOrdersPage} />
-        <Route path="/schools">
-          <AdminOnly>
-            <SchoolsPage />
-          </AdminOnly>
-        </Route>
-        <Route path="/school-defaults">
-          <AdminOnly>
-            <SchoolDefaultsPage />
-          </AdminOnly>
-        </Route>
-        <Route path="/products">
-          <AdminOnly>
-            <ProductsPage />
-          </AdminOnly>
-        </Route>
-        <Route path="/menu-templates">
-          <AdminOnly>
-            <MenuTemplatesPage />
-          </AdminOnly>
-        </Route>
-        <Route path="/staff">
-          <AdminOnly>
-            <StaffPage />
-          </AdminOnly>
-        </Route>
-        <Route path="/settings">
-          <AdminOnly>
-            <SettingsPage />
-          </AdminOnly>
-        </Route>
+        {PAGES.map((page) => {
+          const Component = PAGE_COMPONENTS[page.key];
+          if (!Component) return null;
+          // For "/" we let the dedicated root route below handle the redirect
+          // when the user can't access the dashboard.
+          if (page.path === "/") {
+            return (
+              <Route key={page.key} path={page.path}>
+                {canAccessPath(role, "/") ? (
+                  <Component />
+                ) : (
+                  <Redirect to={homePath === "/" ? "/no-access" : homePath} />
+                )}
+              </Route>
+            );
+          }
+          return (
+            <Route key={page.key} path={page.path}>
+              <RequireRole roles={page.roles}>
+                <Component />
+              </RequireRole>
+            </Route>
+          );
+        })}
+        <Route path="/no-access" component={NoAccessPage} />
         <Route component={NotFound} />
       </Switch>
     </AppShell>

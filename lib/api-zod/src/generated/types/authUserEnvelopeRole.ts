@@ -16,4 +16,5 @@ export type AuthUserEnvelopeRole =
 export const AuthUserEnvelopeRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;

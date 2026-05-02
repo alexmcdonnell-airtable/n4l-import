@@ -12,4 +12,5 @@ export type InviteStaffBodyRole =
 export const InviteStaffBodyRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;

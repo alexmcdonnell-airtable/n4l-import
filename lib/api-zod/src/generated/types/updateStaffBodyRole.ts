@@ -12,4 +12,5 @@ export type UpdateStaffBodyRole =
 export const UpdateStaffBodyRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;

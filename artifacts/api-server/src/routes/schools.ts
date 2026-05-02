@@ -50,7 +50,7 @@ function serialize(req: Request, row: SchoolRow) {
 
 router.get(
   "/schools",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const rows = await db
       .select()
@@ -62,7 +62,7 @@ router.get(
 
 router.post(
   "/schools",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const parsed = CreateSchoolBody.safeParse(req.body);
     if (!parsed.success) {
@@ -90,7 +90,7 @@ router.post(
 
 router.get(
   "/schools/:id",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const params = GetSchoolParams.safeParse(req.params);
     if (!params.success) {
@@ -111,7 +111,7 @@ router.get(
 
 router.patch(
   "/schools/:id",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const params = UpdateSchoolParams.safeParse(req.params);
     if (!params.success) {
@@ -150,7 +150,7 @@ router.patch(
 
 router.delete(
   "/schools/:id",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const params = DeleteSchoolParams.safeParse(req.params);
     if (!params.success) {
@@ -171,7 +171,7 @@ router.delete(
 
 router.post(
   "/schools/:id/reset-token",
-  requireStaff("admin"),
+  requireStaff(["admin", "staff"]),
   async (req, res): Promise<void> => {
     const params = ResetSchoolTokenParams.safeParse(req.params);
     if (!params.success) {

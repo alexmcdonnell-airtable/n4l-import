@@ -8,15 +8,19 @@ import {
 import { useAuth } from "@/lib/auth-context";
 import { Button } from "@/components/ui/button";
 import { School, Users, ArrowRight } from "lucide-react";
+import { canAccessPath } from "@/lib/roles";
 
 export default function DashboardPage() {
   const { data } = useAuth();
-  const isAdmin = data?.role === "admin";
+  const role = data?.role;
+  const isAdmin = role === "admin";
+  const canSchools = canAccessPath(role, "/schools");
+  const canStaff = canAccessPath(role, "/staff");
   const schools = useListSchools({
-    query: { queryKey: getListSchoolsQueryKey(), enabled: isAdmin },
+    query: { queryKey: getListSchoolsQueryKey(), enabled: canSchools },
   });
   const staff = useListStaff({
-    query: { queryKey: getListStaffQueryKey(), enabled: isAdmin },
+    query: { queryKey: getListStaffQueryKey(), enabled: canStaff },
   });
   const firstName = data?.user?.firstName || "there";
 
@@ -33,11 +37,12 @@ export default function DashboardPage() {
         </p>
       </header>
 
-      {isAdmin ? (
-        <div className="grid sm:grid-cols-2 gap-4">
+      <div className="grid sm:grid-cols-2 gap-4">
+        {canSchools && (
           <Link
             href="/schools"
             className="group block bg-card border border-card-border rounded-xl p-6 shadow-sm hover-elevate"
+            data-testid="card-schools"
           >
             <div className="flex items-center justify-between mb-4">
               <span className="inline-flex w-10 h-10 rounded-lg bg-primary/10 text-primary items-center justify-center">
@@ -52,9 +57,12 @@ export default function DashboardPage() {
               Partner schools
             </div>
           </Link>
+        )}
+        {canStaff && (
           <Link
             href="/staff"
             className="group block bg-card border border-card-border rounded-xl p-6 shadow-sm hover-elevate"
+            data-testid="card-staff"
           >
             <div className="flex items-center justify-between mb-4">
               <span className="inline-flex w-10 h-10 rounded-lg bg-accent/15 text-accent-foreground items-center justify-center">
@@ -69,17 +77,8 @@ export default function DashboardPage() {
               Team members
             </div>
           </Link>
-        </div>
-      ) : (
-        <div className="bg-card border border-card-border rounded-xl p-6 shadow-sm">
-          <h2 className="font-semibold mb-1">You're signed in as staff</h2>
-          <p className="text-sm text-muted-foreground">
-            Admin features (Schools and Staff management) are not available on
-            your account. Reach out to an administrator if you need elevated
-            access.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
 
       {isAdmin && (
         <div className="bg-sidebar border border-border rounded-xl p-6">

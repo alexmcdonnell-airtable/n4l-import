@@ -1,7 +1,7 @@
 import { db, staffProfilesTable, staffAllowlistTable, usersTable } from "@workspace/db";
 import { count, eq } from "drizzle-orm";
 
-export type StaffRole = "admin" | "staff";
+export type StaffRole = "admin" | "staff" | "warehouse";
 
 export interface StaffProfileRecord {
   userId: string;

@@ -37,7 +37,12 @@ export const GetCurrentAuthUserResponse = zod.object({
     zod.null(),
   ]),
   role: zod
-    .union([zod.literal("admin"), zod.literal("staff"), zod.literal(null)])
+    .union([
+      zod.literal("admin"),
+      zod.literal("staff"),
+      zod.literal("warehouse"),
+      zod.literal(null),
+    ])
     .nullable(),
   active: zod.boolean(),
 });
@@ -510,7 +515,7 @@ export const ListStaffResponseItem = zod.object({
   firstName: zod.string().nullable(),
   lastName: zod.string().nullable(),
   profileImageUrl: zod.string().nullable(),
-  role: zod.enum(["admin", "staff"]),
+  role: zod.enum(["admin", "staff", "warehouse"]),
   active: zod.boolean(),
   status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),
@@ -530,7 +535,7 @@ export const InviteStaffHeader = zod.object({
 
 export const InviteStaffBody = zod.object({
   email: zod.string().email().min(1),
-  role: zod.enum(["admin", "staff"]),
+  role: zod.enum(["admin", "staff", "warehouse"]),
 });
 
 /**
@@ -548,7 +553,7 @@ export const UpdateStaffHeader = zod.object({
 });
 
 export const UpdateStaffBody = zod.object({
-  role: zod.enum(["admin", "staff"]).optional(),
+  role: zod.enum(["admin", "staff", "warehouse"]).optional(),
   active: zod.boolean().optional(),
 });
 
@@ -558,7 +563,7 @@ export const UpdateStaffResponse = zod.object({
   firstName: zod.string().nullable(),
   lastName: zod.string().nullable(),
   profileImageUrl: zod.string().nullable(),
-  role: zod.enum(["admin", "staff"]),
+  role: zod.enum(["admin", "staff", "warehouse"]),
   active: zod.boolean(),
   status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),

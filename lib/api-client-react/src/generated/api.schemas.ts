@@ -31,6 +31,7 @@ export type AuthUserEnvelopeRole =
 export const AuthUserEnvelopeRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;
 
 export interface AuthUserEnvelope {
@@ -134,6 +135,7 @@ export type StaffMemberRole =
 export const StaffMemberRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;
 
 export type StaffMemberStatus =
@@ -169,6 +171,7 @@ export type UpdateStaffBodyRole =
 export const UpdateStaffBodyRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;
 
 export interface UpdateStaffBody {
@@ -182,6 +185,7 @@ export type InviteStaffBodyRole =
 export const InviteStaffBodyRole = {
   admin: "admin",
   staff: "staff",
+  warehouse: "warehouse",
 } as const;
 
 export interface InviteStaffBody {

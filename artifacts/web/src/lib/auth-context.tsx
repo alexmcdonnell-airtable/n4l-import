@@ -3,6 +3,7 @@ import {
   useGetCurrentAuthUser,
   getGetCurrentAuthUserQueryKey,
 } from "@workspace/api-client-react";
+import type { Role } from "@/lib/roles";
 
 type AuthEnvelope = {
   user: {
@@ -12,7 +13,7 @@ type AuthEnvelope = {
     lastName: string | null;
     profileImageUrl: string | null;
   } | null;
-  role: "admin" | "staff" | null;
+  role: Role | null;
   active: boolean;
 };
 

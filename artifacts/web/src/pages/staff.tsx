@@ -21,6 +21,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { UserPlus, Trash2 } from "lucide-react";
+import type { Role } from "@/lib/roles";
+
+const ROLE_OPTIONS: { value: Role; label: string }[] = [
+  { value: "admin", label: "Admin" },
+  { value: "staff", label: "Staff" },
+  { value: "warehouse", label: "Warehouse" },
+];
 
 function StatusBadge({ status }: { status: string }) {
   if (status === "invited") {
@@ -53,7 +60,7 @@ export default function StaffPage() {
   const removeMut = useRemoveStaff();
 
   const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"admin" | "staff">("staff");
+  const [inviteRole, setInviteRole] = useState<Role>("staff");
   const [inviting, setInviting] = useState(false);
 
   const invalidate = () =>
@@ -61,7 +68,7 @@ export default function StaffPage() {
 
   async function update(
     id: string,
-    body: { role?: "admin" | "staff"; active?: boolean },
+    body: { role?: Role; active?: boolean },
   ) {
     try {
       await updateMut.mutateAsync({ id, data: body });
@@ -73,7 +80,7 @@ export default function StaffPage() {
     }
   }
 
-  async function updateInvitedRole(email: string, role: "admin" | "staff") {
+  async function updateInvitedRole(email: string, role: Role) {
     try {
       await inviteMut.mutateAsync({ data: { email, role } });
       toast({ title: "Role updated" });
@@ -93,7 +100,7 @@ export default function StaffPage() {
       await inviteMut.mutateAsync({ data: { email, role: inviteRole } });
       toast({ title: `${email} added to the access list` });
       setInviteEmail("");
-      setInviteRole("staff");
+      setInviteRole("staff" as Role);
       invalidate();
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to add staff member";
@@ -153,14 +160,17 @@ export default function StaffPage() {
             </label>
             <Select
               value={inviteRole}
-              onValueChange={(v) => setInviteRole(v as "admin" | "staff")}
+              onValueChange={(v) => setInviteRole(v as Role)}
             >
-              <SelectTrigger className="h-9">
+              <SelectTrigger className="h-9" data-testid="select-invite-role">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="staff">Staff</SelectItem>
-                <SelectItem value="admin">Admin</SelectItem>
+                {ROLE_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
           </div>
@@ -227,19 +237,25 @@ export default function StaffPage() {
                       value={m.role}
                       onValueChange={(v) => {
                         if (isInvited && m.email) {
-                          updateInvitedRole(m.email, v as "admin" | "staff");
+                          updateInvitedRole(m.email, v as Role);
                         } else {
-                          update(m.id, { role: v as "admin" | "staff" });
+                          update(m.id, { role: v as Role });
                         }
                       }}
                       disabled={isSelf}
                     >
-                      <SelectTrigger className="w-32">
+                      <SelectTrigger
+                        className="w-36"
+                        data-testid={`select-role-${m.id}`}
+                      >
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">Admin</SelectItem>
-                        <SelectItem value="staff">Staff</SelectItem>
+                        {ROLE_OPTIONS.map((opt) => (
+                          <SelectItem key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </td>
