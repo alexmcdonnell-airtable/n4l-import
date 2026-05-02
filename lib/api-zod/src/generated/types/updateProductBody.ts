@@ -20,4 +20,14 @@ export interface UpdateProductBody {
   /** @nullable */
   allergens?: string | null;
   active?: boolean;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  minInventory?: number | null;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  maxInventory?: number | null;
 }

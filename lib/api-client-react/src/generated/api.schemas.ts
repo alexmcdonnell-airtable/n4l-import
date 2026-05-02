@@ -204,6 +204,16 @@ export interface Product {
   /** @nullable */
   allergens: string | null;
   active: boolean;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  minInventory: number | null;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  maxInventory: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -222,6 +232,16 @@ export interface CreateProductBody {
   /** @nullable */
   allergens?: string | null;
   active?: boolean;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  minInventory?: number | null;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  maxInventory?: number | null;
 }
 
 export interface UpdateProductBody {
@@ -238,6 +258,16 @@ export interface UpdateProductBody {
   /** @nullable */
   allergens?: string | null;
   active?: boolean;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  minInventory?: number | null;
+  /**
+   * @minimum 0
+   * @nullable
+   */
+  maxInventory?: number | null;
 }
 
 export interface MenuTemplateItem {

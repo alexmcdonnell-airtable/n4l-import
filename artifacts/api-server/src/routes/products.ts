@@ -8,11 +8,15 @@ import {
   weeklyOrderItemsTable,
 } from "@workspace/db";
 import {
-  CreateProductBody,
-  UpdateProductBody,
+  CreateProductBody as CreateProductBodyBase,
+  UpdateProductBody as UpdateProductBodyBase,
   UpdateProductParams,
   DeleteProductParams,
+  productMinMaxRefiner,
 } from "@workspace/api-zod";
+
+const CreateProductBody = CreateProductBodyBase.superRefine(productMinMaxRefiner);
+const UpdateProductBody = UpdateProductBodyBase.superRefine(productMinMaxRefiner);
 import { requireStaff } from "../middlewares/requireStaff";
 import { serializeProduct } from "../lib/orderHelpers";
 
@@ -46,6 +50,8 @@ router.post(
         sku: parsed.data.sku ?? null,
         allergens: parsed.data.allergens ?? null,
         active: parsed.data.active ?? true,
+        minInventory: parsed.data.minInventory ?? null,
+        maxInventory: parsed.data.maxInventory ?? null,
       })
       .returning();
     res.status(201).json(serializeProduct(row));
@@ -66,6 +72,41 @@ router.patch(
       res.status(400).json({ error: parsed.error.message });
       return;
     }
+    if (
+      parsed.data.minInventory !== undefined ||
+      parsed.data.maxInventory !== undefined
+    ) {
+      const [existing] = await db
+        .select({
+          minInventory: productsTable.minInventory,
+          maxInventory: productsTable.maxInventory,
+        })
+        .from(productsTable)
+        .where(eq(productsTable.id, params.data.id));
+      if (!existing) {
+        res.status(404).json({ error: "Product not found" });
+        return;
+      }
+      const effectiveMin =
+        parsed.data.minInventory !== undefined
+          ? parsed.data.minInventory
+          : existing.minInventory;
+      const effectiveMax =
+        parsed.data.maxInventory !== undefined
+          ? parsed.data.maxInventory
+          : existing.maxInventory;
+      if (
+        effectiveMin !== null &&
+        effectiveMax !== null &&
+        effectiveMin > effectiveMax
+      ) {
+        res.status(400).json({
+          error:
+            "maxInventory must be greater than or equal to minInventory.",
+        });
+        return;
+      }
+    }
     const [row] = await db
       .update(productsTable)
       .set({
@@ -82,6 +123,12 @@ router.patch(
           allergens: parsed.data.allergens,
         }),
         ...(parsed.data.active !== undefined && { active: parsed.data.active }),
+        ...(parsed.data.minInventory !== undefined && {
+          minInventory: parsed.data.minInventory,
+        }),
+        ...(parsed.data.maxInventory !== undefined && {
+          maxInventory: parsed.data.maxInventory,
+        }),
       })
       .where(eq(productsTable.id, params.data.id))
       .returning();

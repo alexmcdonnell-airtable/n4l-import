@@ -28,6 +28,8 @@ export interface SerializedProduct {
   sku: string | null;
   allergens: string | null;
   active: boolean;
+  minInventory: number | null;
+  maxInventory: number | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -55,6 +57,8 @@ export function serializeProduct(p: Product): SerializedProduct {
     sku: p.sku,
     allergens: p.allergens,
     active: p.active,
+    minInventory: p.minInventory,
+    maxInventory: p.maxInventory,
     createdAt: p.createdAt.toISOString(),
     updatedAt: p.updatedAt.toISOString(),
   };

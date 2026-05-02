@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
+  integer,
   pgTable,
   text,
   timestamp,
@@ -19,6 +20,8 @@ export const productsTable = pgTable(
     sku: varchar("sku"),
     allergens: text("allergens"),
     active: boolean("active").notNull().default(true),
+    minInventory: integer("min_inventory"),
+    maxInventory: integer("max_inventory"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

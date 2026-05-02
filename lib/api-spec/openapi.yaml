@@ -1427,6 +1427,8 @@ components:
         - sku
         - allergens
         - active
+        - minInventory
+        - maxInventory
         - createdAt
         - updatedAt
       properties:
@@ -1438,6 +1440,8 @@ components:
         sku: { type: [string, 'null'] }
         allergens: { type: [string, 'null'] }
         active: { type: boolean }
+        minInventory: { type: [integer, 'null'], minimum: 0 }
+        maxInventory: { type: [integer, 'null'], minimum: 0 }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     CreateProductBody:
@@ -1451,6 +1455,8 @@ components:
         sku: { type: [string, 'null'] }
         allergens: { type: [string, 'null'] }
         active: { type: boolean }
+        minInventory: { type: [integer, 'null'], minimum: 0 }
+        maxInventory: { type: [integer, 'null'], minimum: 0 }
     UpdateProductBody:
       type: object
       properties:
@@ -1461,6 +1467,8 @@ components:
         sku: { type: [string, 'null'] }
         allergens: { type: [string, 'null'] }
         active: { type: boolean }
+        minInventory: { type: [integer, 'null'], minimum: 0 }
+        maxInventory: { type: [integer, 'null'], minimum: 0 }
     MenuTemplateItem:
       type: object
       required: [id, templateId, productId, quantity, product]

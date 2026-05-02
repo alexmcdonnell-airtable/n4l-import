@@ -32,7 +32,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Search, Pencil, Trash2 } from "lucide-react";
+import { Plus, Search, Pencil, Trash2, ArrowUp, ArrowDown } from "lucide-react";
 
 type Product = {
   id: string;
@@ -43,6 +43,8 @@ type Product = {
   sku: string | null;
   allergens: string | null;
   active: boolean;
+  minInventory: number | null;
+  maxInventory: number | null;
 };
 
 type FormState = {
@@ -53,6 +55,8 @@ type FormState = {
   sku: string;
   allergens: string;
   active: boolean;
+  minInventory: string;
+  maxInventory: string;
 };
 
 const emptyForm: FormState = {
@@ -63,11 +67,30 @@ const emptyForm: FormState = {
   sku: "",
   allergens: "",
   active: true,
+  minInventory: "",
+  maxInventory: "",
 };
 
 function nullable(v: string): string | null {
   const t = v.trim();
   return t.length === 0 ? null : t;
+}
+
+type InventoryParse =
+  | { ok: true; value: number | null }
+  | { ok: false; error: string };
+
+function parseInventory(v: string): InventoryParse {
+  const t = v.trim();
+  if (t.length === 0) return { ok: true, value: null };
+  if (!/^\d+$/.test(t)) {
+    return { ok: false, error: "Must be a whole number ≥ 0." };
+  }
+  const n = Number(t);
+  if (!Number.isFinite(n) || n < 0) {
+    return { ok: false, error: "Must be a whole number ≥ 0." };
+  }
+  return { ok: true, value: n };
 }
 
 export default function ProductsPage() {
@@ -77,6 +100,19 @@ export default function ProductsPage() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [form, setForm] = useState<FormState>(emptyForm);
   const [confirmDelete, setConfirmDelete] = useState<Product | null>(null);
+  const [sortBy, setSortBy] = useState<"minInventory" | "maxInventory" | null>(
+    null,
+  );
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+
+  function toggleSort(key: "minInventory" | "maxInventory") {
+    if (sortBy === key) {
+      setSortDir(sortDir === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(key);
+      setSortDir("asc");
+    }
+  }
 
   const list = useListProducts({
     query: { queryKey: getListProductsQueryKey() },
@@ -97,6 +133,33 @@ export default function ProductsPage() {
     );
   }, [list.data, search]);
 
+  const sorted = useMemo(() => {
+    if (!sortBy) return filtered;
+    const dir = sortDir === "asc" ? 1 : -1;
+    return [...filtered].sort((a, b) => {
+      const av = a[sortBy];
+      const bv = b[sortBy];
+      // Nulls always sort last regardless of direction.
+      if (av == null && bv == null) return 0;
+      if (av == null) return 1;
+      if (bv == null) return -1;
+      return (av - bv) * dir;
+    });
+  }, [filtered, sortBy, sortDir]);
+
+  const minParse = parseInventory(form.minInventory);
+  const maxParse = parseInventory(form.maxInventory);
+  const minError = minParse.ok ? null : minParse.error;
+  const maxError = maxParse.ok ? null : maxParse.error;
+  const crossError =
+    minParse.ok &&
+    maxParse.ok &&
+    minParse.value != null &&
+    maxParse.value != null &&
+    minParse.value > maxParse.value
+      ? "Max inventory must be greater than or equal to min inventory."
+      : null;
+
   const invalidate = () =>
     qc.invalidateQueries({ queryKey: getListProductsQueryKey() });
 
@@ -116,6 +179,8 @@ export default function ProductsPage() {
       sku: p.sku ?? "",
       allergens: p.allergens ?? "",
       active: p.active,
+      minInventory: p.minInventory == null ? "" : String(p.minInventory),
+      maxInventory: p.maxInventory == null ? "" : String(p.maxInventory),
     });
     setOpen(true);
   }
@@ -123,6 +188,14 @@ export default function ProductsPage() {
   async function handleSubmit() {
     if (!form.name.trim()) {
       toast({ title: "Name is required", variant: "destructive" });
+      return;
+    }
+    if (!minParse.ok || !maxParse.ok || crossError) {
+      toast({
+        title:
+          minError ?? maxError ?? crossError ?? "Invalid inventory values",
+        variant: "destructive",
+      });
       return;
     }
     const body = {
@@ -133,6 +206,8 @@ export default function ProductsPage() {
       sku: nullable(form.sku),
       allergens: nullable(form.allergens),
       active: form.active,
+      minInventory: minParse.value,
+      maxInventory: maxParse.value,
     };
     try {
       if (editing) {
@@ -161,6 +236,9 @@ export default function ProductsPage() {
       toast({ title: msg, variant: "destructive" });
     }
   }
+
+  const formInvalid =
+    !!minError || !!maxError || !!crossError || !form.name.trim();
 
   return (
     <div className="space-y-6">
@@ -195,6 +273,40 @@ export default function ProductsPage() {
               <th className="text-left font-medium px-4 py-2.5">Product</th>
               <th className="text-left font-medium px-4 py-2.5">Category</th>
               <th className="text-left font-medium px-4 py-2.5">Unit / SKU</th>
+              <th className="text-right font-medium px-4 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("minInventory")}
+                  className="inline-flex items-center gap-1 ml-auto hover:text-foreground"
+                  data-testid="sort-min-inventory"
+                  aria-label="Sort by minimum inventory"
+                >
+                  Min
+                  {sortBy === "minInventory" &&
+                    (sortDir === "asc" ? (
+                      <ArrowUp className="w-3 h-3" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3" />
+                    ))}
+                </button>
+              </th>
+              <th className="text-right font-medium px-4 py-2.5">
+                <button
+                  type="button"
+                  onClick={() => toggleSort("maxInventory")}
+                  className="inline-flex items-center gap-1 ml-auto hover:text-foreground"
+                  data-testid="sort-max-inventory"
+                  aria-label="Sort by maximum inventory"
+                >
+                  Max
+                  {sortBy === "maxInventory" &&
+                    (sortDir === "asc" ? (
+                      <ArrowUp className="w-3 h-3" />
+                    ) : (
+                      <ArrowDown className="w-3 h-3" />
+                    ))}
+                </button>
+              </th>
               <th className="text-left font-medium px-4 py-2.5">Status</th>
               <th className="text-right font-medium px-4 py-2.5">Actions</th>
             </tr>
@@ -203,7 +315,7 @@ export default function ProductsPage() {
             {list.isLoading && (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   Loading products…
@@ -213,7 +325,7 @@ export default function ProductsPage() {
             {!list.isLoading && filtered.length === 0 && (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={7}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   {search.trim()
@@ -222,7 +334,7 @@ export default function ProductsPage() {
                 </td>
               </tr>
             )}
-            {filtered.map((p) => (
+            {sorted.map((p) => (
               <tr
                 key={p.id}
                 className="border-t border-border align-top"
@@ -256,6 +368,26 @@ export default function ProductsPage() {
                     <div className="text-xs text-muted-foreground font-mono">
                       {p.sku}
                     </div>
+                  )}
+                </td>
+                <td
+                  className="px-4 py-3 text-right tabular-nums"
+                  data-testid={`cell-min-inventory-${p.id}`}
+                >
+                  {p.minInventory == null ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    p.minInventory
+                  )}
+                </td>
+                <td
+                  className="px-4 py-3 text-right tabular-nums"
+                  data-testid={`cell-max-inventory-${p.id}`}
+                >
+                  {p.maxInventory == null ? (
+                    <span className="text-muted-foreground">—</span>
+                  ) : (
+                    p.maxInventory
                   )}
                 </td>
                 <td className="px-4 py-3">
@@ -363,6 +495,66 @@ export default function ProductsPage() {
                 }
               />
             </div>
+            <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid gap-1.5">
+                <Label htmlFor="p-min">Min inventory</Label>
+                <Input
+                  id="p-min"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  placeholder="Leave blank if not configured"
+                  value={form.minInventory}
+                  onChange={(e) =>
+                    setForm({ ...form, minInventory: e.target.value })
+                  }
+                  aria-invalid={!!minError}
+                  data-testid="input-product-min-inventory"
+                />
+                {minError && (
+                  <p
+                    className="text-xs text-destructive"
+                    data-testid="error-product-min-inventory"
+                  >
+                    {minError}
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-1.5">
+                <Label htmlFor="p-max">Max inventory</Label>
+                <Input
+                  id="p-max"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  placeholder="Leave blank if not configured"
+                  value={form.maxInventory}
+                  onChange={(e) =>
+                    setForm({ ...form, maxInventory: e.target.value })
+                  }
+                  aria-invalid={!!maxError || !!crossError}
+                  data-testid="input-product-max-inventory"
+                />
+                {maxError && (
+                  <p
+                    className="text-xs text-destructive"
+                    data-testid="error-product-max-inventory"
+                  >
+                    {maxError}
+                  </p>
+                )}
+              </div>
+            </div>
+            {crossError && (
+              <p
+                className="text-xs text-destructive"
+                data-testid="error-product-min-max-cross"
+              >
+                {crossError}
+              </p>
+            )}
             <div className="flex items-center gap-3 pt-1">
               <Switch
                 id="p-active"
@@ -380,7 +572,9 @@ export default function ProductsPage() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={createMut.isPending || updateMut.isPending}
+              disabled={
+                createMut.isPending || updateMut.isPending || formInvalid
+              }
               data-testid="button-save-product"
             >
               {editing ? "Save changes" : "Create product"}

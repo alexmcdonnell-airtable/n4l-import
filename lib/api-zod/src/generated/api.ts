@@ -283,6 +283,10 @@ export const GetSchoolDefaultMenuHeader = zod.object({
 
 export const getSchoolDefaultMenuResponseQuantityMin = 0;
 
+export const getSchoolDefaultMenuResponseProductMinInventoryMin = 0;
+
+export const getSchoolDefaultMenuResponseProductMaxInventoryMin = 0;
+
 export const GetSchoolDefaultMenuResponseItem = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -297,6 +301,14 @@ export const GetSchoolDefaultMenuResponseItem = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(getSchoolDefaultMenuResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(getSchoolDefaultMenuResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -328,6 +340,10 @@ export const AddSchoolDefaultMenuItemBody = zod.object({
 
 export const addSchoolDefaultMenuItemResponseQuantityMin = 0;
 
+export const addSchoolDefaultMenuItemResponseProductMinInventoryMin = 0;
+
+export const addSchoolDefaultMenuItemResponseProductMaxInventoryMin = 0;
+
 export const AddSchoolDefaultMenuItemResponse = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -342,6 +358,14 @@ export const AddSchoolDefaultMenuItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(addSchoolDefaultMenuItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(addSchoolDefaultMenuItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -367,6 +391,10 @@ export const StampTemplateOntoSchoolBody = zod.object({
 
 export const stampTemplateOntoSchoolResponseQuantityMin = 0;
 
+export const stampTemplateOntoSchoolResponseProductMinInventoryMin = 0;
+
+export const stampTemplateOntoSchoolResponseProductMaxInventoryMin = 0;
+
 export const StampTemplateOntoSchoolResponseItem = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -381,6 +409,14 @@ export const StampTemplateOntoSchoolResponseItem = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(stampTemplateOntoSchoolResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(stampTemplateOntoSchoolResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -412,6 +448,10 @@ export const UpdateSchoolDefaultMenuItemBody = zod.object({
 
 export const updateSchoolDefaultMenuItemResponseQuantityMin = 0;
 
+export const updateSchoolDefaultMenuItemResponseProductMinInventoryMin = 0;
+
+export const updateSchoolDefaultMenuItemResponseProductMaxInventoryMin = 0;
+
 export const UpdateSchoolDefaultMenuItemResponse = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -426,6 +466,14 @@ export const UpdateSchoolDefaultMenuItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(updateSchoolDefaultMenuItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(updateSchoolDefaultMenuItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -541,6 +589,10 @@ export const ListProductsHeader = zod.object({
     .describe("Opaque session token — `Bearer <sid>`."),
 });
 
+export const listProductsResponseMinInventoryMin = 0;
+
+export const listProductsResponseMaxInventoryMin = 0;
+
 export const ListProductsResponseItem = zod.object({
   id: zod.string(),
   name: zod.string(),
@@ -550,6 +602,14 @@ export const ListProductsResponseItem = zod.object({
   sku: zod.string().nullable(),
   allergens: zod.string().nullable(),
   active: zod.boolean(),
+  minInventory: zod
+    .number()
+    .min(listProductsResponseMinInventoryMin)
+    .nullable(),
+  maxInventory: zod
+    .number()
+    .min(listProductsResponseMaxInventoryMin)
+    .nullable(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -565,6 +625,10 @@ export const CreateProductHeader = zod.object({
     .describe("Opaque session token — `Bearer <sid>`."),
 });
 
+export const createProductBodyMinInventoryMin = 0;
+
+export const createProductBodyMaxInventoryMin = 0;
+
 export const CreateProductBody = zod.object({
   name: zod.string().min(1),
   description: zod.string().nullish(),
@@ -573,6 +637,8 @@ export const CreateProductBody = zod.object({
   sku: zod.string().nullish(),
   allergens: zod.string().nullish(),
   active: zod.boolean().optional(),
+  minInventory: zod.number().min(createProductBodyMinInventoryMin).nullish(),
+  maxInventory: zod.number().min(createProductBodyMaxInventoryMin).nullish(),
 });
 
 /**
@@ -589,6 +655,10 @@ export const UpdateProductHeader = zod.object({
     .describe("Opaque session token — `Bearer <sid>`."),
 });
 
+export const updateProductBodyMinInventoryMin = 0;
+
+export const updateProductBodyMaxInventoryMin = 0;
+
 export const UpdateProductBody = zod.object({
   name: zod.string().min(1).optional(),
   description: zod.string().nullish(),
@@ -597,7 +667,13 @@ export const UpdateProductBody = zod.object({
   sku: zod.string().nullish(),
   allergens: zod.string().nullish(),
   active: zod.boolean().optional(),
+  minInventory: zod.number().min(updateProductBodyMinInventoryMin).nullish(),
+  maxInventory: zod.number().min(updateProductBodyMaxInventoryMin).nullish(),
 });
+
+export const updateProductResponseMinInventoryMin = 0;
+
+export const updateProductResponseMaxInventoryMin = 0;
 
 export const UpdateProductResponse = zod.object({
   id: zod.string(),
@@ -608,6 +684,14 @@ export const UpdateProductResponse = zod.object({
   sku: zod.string().nullable(),
   allergens: zod.string().nullable(),
   active: zod.boolean(),
+  minInventory: zod
+    .number()
+    .min(updateProductResponseMinInventoryMin)
+    .nullable(),
+  maxInventory: zod
+    .number()
+    .min(updateProductResponseMaxInventoryMin)
+    .nullable(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -638,6 +722,10 @@ export const ListMenuTemplatesHeader = zod.object({
 
 export const listMenuTemplatesResponseItemsItemQuantityMin = 0;
 
+export const listMenuTemplatesResponseItemsItemProductMinInventoryMin = 0;
+
+export const listMenuTemplatesResponseItemsItemProductMaxInventoryMin = 0;
+
 export const ListMenuTemplatesResponseItem = zod.object({
   id: zod.string(),
   name: zod.string(),
@@ -657,6 +745,14 @@ export const ListMenuTemplatesResponseItem = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(listMenuTemplatesResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(listMenuTemplatesResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -700,6 +796,10 @@ export const GetMenuTemplateHeader = zod.object({
 
 export const getMenuTemplateResponseItemsItemQuantityMin = 0;
 
+export const getMenuTemplateResponseItemsItemProductMinInventoryMin = 0;
+
+export const getMenuTemplateResponseItemsItemProductMaxInventoryMin = 0;
+
 export const GetMenuTemplateResponse = zod.object({
   id: zod.string(),
   name: zod.string(),
@@ -719,6 +819,14 @@ export const GetMenuTemplateResponse = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(getMenuTemplateResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(getMenuTemplateResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -749,6 +857,10 @@ export const UpdateMenuTemplateBody = zod.object({
 
 export const updateMenuTemplateResponseItemsItemQuantityMin = 0;
 
+export const updateMenuTemplateResponseItemsItemProductMinInventoryMin = 0;
+
+export const updateMenuTemplateResponseItemsItemProductMaxInventoryMin = 0;
+
 export const UpdateMenuTemplateResponse = zod.object({
   id: zod.string(),
   name: zod.string(),
@@ -770,6 +882,14 @@ export const UpdateMenuTemplateResponse = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(updateMenuTemplateResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(updateMenuTemplateResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -816,6 +936,10 @@ export const AddMenuTemplateItemBody = zod.object({
 
 export const addMenuTemplateItemResponseQuantityMin = 0;
 
+export const addMenuTemplateItemResponseProductMinInventoryMin = 0;
+
+export const addMenuTemplateItemResponseProductMaxInventoryMin = 0;
+
 export const AddMenuTemplateItemResponse = zod.object({
   id: zod.string(),
   templateId: zod.string(),
@@ -830,6 +954,14 @@ export const AddMenuTemplateItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(addMenuTemplateItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(addMenuTemplateItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -858,6 +990,10 @@ export const UpdateMenuTemplateItemBody = zod.object({
 
 export const updateMenuTemplateItemResponseQuantityMin = 0;
 
+export const updateMenuTemplateItemResponseProductMinInventoryMin = 0;
+
+export const updateMenuTemplateItemResponseProductMaxInventoryMin = 0;
+
 export const UpdateMenuTemplateItemResponse = zod.object({
   id: zod.string(),
   templateId: zod.string(),
@@ -872,6 +1008,14 @@ export const UpdateMenuTemplateItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(updateMenuTemplateItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(updateMenuTemplateItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -972,6 +1116,10 @@ export const GetWeeklyOrderHeader = zod.object({
 
 export const getWeeklyOrderResponseItemsItemQuantityMin = 0;
 
+export const getWeeklyOrderResponseItemsItemProductMinInventoryMin = 0;
+
+export const getWeeklyOrderResponseItemsItemProductMaxInventoryMin = 0;
+
 export const GetWeeklyOrderResponse = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -996,6 +1144,14 @@ export const GetWeeklyOrderResponse = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(getWeeklyOrderResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(getWeeklyOrderResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -1026,6 +1182,10 @@ export const UpdateWeeklyOrderBody = zod.object({
 
 export const updateWeeklyOrderResponseItemsItemQuantityMin = 0;
 
+export const updateWeeklyOrderResponseItemsItemProductMinInventoryMin = 0;
+
+export const updateWeeklyOrderResponseItemsItemProductMaxInventoryMin = 0;
+
 export const UpdateWeeklyOrderResponse = zod.object({
   id: zod.string(),
   schoolId: zod.string(),
@@ -1050,6 +1210,14 @@ export const UpdateWeeklyOrderResponse = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(updateWeeklyOrderResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(updateWeeklyOrderResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -1075,6 +1243,10 @@ export const OpenOrCreateWeeklyOrderBody = zod.object({
 });
 
 export const openOrCreateWeeklyOrderResponseItemsItemQuantityMin = 0;
+
+export const openOrCreateWeeklyOrderResponseItemsItemProductMinInventoryMin = 0;
+
+export const openOrCreateWeeklyOrderResponseItemsItemProductMaxInventoryMin = 0;
 
 export const OpenOrCreateWeeklyOrderResponse = zod.object({
   id: zod.string(),
@@ -1102,6 +1274,14 @@ export const OpenOrCreateWeeklyOrderResponse = zod.object({
         sku: zod.string().nullable(),
         allergens: zod.string().nullable(),
         active: zod.boolean(),
+        minInventory: zod
+          .number()
+          .min(openOrCreateWeeklyOrderResponseItemsItemProductMinInventoryMin)
+          .nullable(),
+        maxInventory: zod
+          .number()
+          .min(openOrCreateWeeklyOrderResponseItemsItemProductMaxInventoryMin)
+          .nullable(),
         createdAt: zod.coerce.date(),
         updatedAt: zod.coerce.date(),
       }),
@@ -1135,6 +1315,10 @@ export const AddWeeklyOrderItemBody = zod.object({
 
 export const addWeeklyOrderItemResponseQuantityMin = 0;
 
+export const addWeeklyOrderItemResponseProductMinInventoryMin = 0;
+
+export const addWeeklyOrderItemResponseProductMaxInventoryMin = 0;
+
 export const AddWeeklyOrderItemResponse = zod.object({
   id: zod.string(),
   orderId: zod.string(),
@@ -1150,6 +1334,14 @@ export const AddWeeklyOrderItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(addWeeklyOrderItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(addWeeklyOrderItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1179,6 +1371,10 @@ export const UpdateWeeklyOrderItemBody = zod.object({
 
 export const updateWeeklyOrderItemResponseQuantityMin = 0;
 
+export const updateWeeklyOrderItemResponseProductMinInventoryMin = 0;
+
+export const updateWeeklyOrderItemResponseProductMaxInventoryMin = 0;
+
 export const UpdateWeeklyOrderItemResponse = zod.object({
   id: zod.string(),
   orderId: zod.string(),
@@ -1194,6 +1390,14 @@ export const UpdateWeeklyOrderItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(updateWeeklyOrderItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(updateWeeklyOrderItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1239,6 +1443,10 @@ export const GetSchoolPortalOrderParams = zod.object({
 
 export const getSchoolPortalOrderResponseOrderOneItemsItemQuantityMin = 0;
 
+export const getSchoolPortalOrderResponseOrderOneItemsItemProductMinInventoryMin = 0;
+
+export const getSchoolPortalOrderResponseOrderOneItemsItemProductMaxInventoryMin = 0;
+
 export const GetSchoolPortalOrderResponse = zod.object({
   school: zod.object({
     id: zod.string(),
@@ -1277,6 +1485,18 @@ export const GetSchoolPortalOrderResponse = zod.object({
             sku: zod.string().nullable(),
             allergens: zod.string().nullable(),
             active: zod.boolean(),
+            minInventory: zod
+              .number()
+              .min(
+                getSchoolPortalOrderResponseOrderOneItemsItemProductMinInventoryMin,
+              )
+              .nullable(),
+            maxInventory: zod
+              .number()
+              .min(
+                getSchoolPortalOrderResponseOrderOneItemsItemProductMaxInventoryMin,
+              )
+              .nullable(),
             createdAt: zod.coerce.date(),
             updatedAt: zod.coerce.date(),
           }),
@@ -1306,6 +1526,10 @@ export const AddPortalOrderItemBody = zod.object({
 
 export const addPortalOrderItemResponseQuantityMin = 0;
 
+export const addPortalOrderItemResponseProductMinInventoryMin = 0;
+
+export const addPortalOrderItemResponseProductMaxInventoryMin = 0;
+
 export const AddPortalOrderItemResponse = zod.object({
   id: zod.string(),
   orderId: zod.string(),
@@ -1321,6 +1545,14 @@ export const AddPortalOrderItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(addPortalOrderItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(addPortalOrderItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1343,6 +1575,10 @@ export const UpdatePortalOrderItemBody = zod.object({
 
 export const updatePortalOrderItemResponseQuantityMin = 0;
 
+export const updatePortalOrderItemResponseProductMinInventoryMin = 0;
+
+export const updatePortalOrderItemResponseProductMaxInventoryMin = 0;
+
 export const UpdatePortalOrderItemResponse = zod.object({
   id: zod.string(),
   orderId: zod.string(),
@@ -1358,6 +1594,14 @@ export const UpdatePortalOrderItemResponse = zod.object({
     sku: zod.string().nullable(),
     allergens: zod.string().nullable(),
     active: zod.boolean(),
+    minInventory: zod
+      .number()
+      .min(updatePortalOrderItemResponseProductMinInventoryMin)
+      .nullable(),
+    maxInventory: zod
+      .number()
+      .min(updatePortalOrderItemResponseProductMaxInventoryMin)
+      .nullable(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   }),
@@ -1383,6 +1627,10 @@ export const UpdatePortalOrderNotesBody = zod.object({
 });
 
 export const updatePortalOrderNotesResponseOrderOneItemsItemQuantityMin = 0;
+
+export const updatePortalOrderNotesResponseOrderOneItemsItemProductMinInventoryMin = 0;
+
+export const updatePortalOrderNotesResponseOrderOneItemsItemProductMaxInventoryMin = 0;
 
 export const UpdatePortalOrderNotesResponse = zod.object({
   school: zod.object({
@@ -1422,6 +1670,18 @@ export const UpdatePortalOrderNotesResponse = zod.object({
             sku: zod.string().nullable(),
             allergens: zod.string().nullable(),
             active: zod.boolean(),
+            minInventory: zod
+              .number()
+              .min(
+                updatePortalOrderNotesResponseOrderOneItemsItemProductMinInventoryMin,
+              )
+              .nullable(),
+            maxInventory: zod
+              .number()
+              .min(
+                updatePortalOrderNotesResponseOrderOneItemsItemProductMaxInventoryMin,
+              )
+              .nullable(),
             createdAt: zod.coerce.date(),
             updatedAt: zod.coerce.date(),
           }),
@@ -1442,6 +1702,10 @@ export const ConfirmPortalOrderParams = zod.object({
 });
 
 export const confirmPortalOrderResponseOrderOneItemsItemQuantityMin = 0;
+
+export const confirmPortalOrderResponseOrderOneItemsItemProductMinInventoryMin = 0;
+
+export const confirmPortalOrderResponseOrderOneItemsItemProductMaxInventoryMin = 0;
 
 export const ConfirmPortalOrderResponse = zod.object({
   school: zod.object({
@@ -1481,6 +1745,18 @@ export const ConfirmPortalOrderResponse = zod.object({
             sku: zod.string().nullable(),
             allergens: zod.string().nullable(),
             active: zod.boolean(),
+            minInventory: zod
+              .number()
+              .min(
+                confirmPortalOrderResponseOrderOneItemsItemProductMinInventoryMin,
+              )
+              .nullable(),
+            maxInventory: zod
+              .number()
+              .min(
+                confirmPortalOrderResponseOrderOneItemsItemProductMaxInventoryMin,
+              )
+              .nullable(),
             createdAt: zod.coerce.date(),
             updatedAt: zod.coerce.date(),
           }),
