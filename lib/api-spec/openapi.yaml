@@ -18,6 +18,16 @@ tags:
     description: Internal staff user management.
   - name: SchoolPortal
     description: Public, token-gated school portal endpoints.
+  - name: Products
+    description: Product catalog.
+  - name: MenuTemplates
+    description: Reusable named menu templates with default quantities.
+  - name: SchoolDefaults
+    description: Per-school default menu management.
+  - name: AppSettings
+    description: Global application settings, including the order window.
+  - name: WeeklyOrders
+    description: Weekly order management for staff.
 paths:
   /healthz:
     get:
@@ -306,6 +316,132 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /schools/{id}/default-menu:
+    get:
+      tags: [SchoolDefaults]
+      operationId: getSchoolDefaultMenu
+      summary: List the school's default menu items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Default menu items for the school.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchoolDefaultMenuItem'
+    post:
+      tags: [SchoolDefaults]
+      operationId: addSchoolDefaultMenuItem
+      summary: Add a single product to the school's default menu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertMenuItemBody'
+      responses:
+        '200':
+          description: Item added or updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolDefaultMenuItem'
+  /schools/{id}/default-menu/stamp:
+    post:
+      tags: [SchoolDefaults]
+      operationId: stampTemplateOntoSchool
+      summary: Replace the school's default menu by stamping a template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StampTemplateBody'
+      responses:
+        '200':
+          description: Default menu replaced with template items.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SchoolDefaultMenuItem'
+  /schools/{id}/default-menu/{itemId}:
+    patch:
+      tags: [SchoolDefaults]
+      operationId: updateSchoolDefaultMenuItem
+      summary: Update a default menu item's quantity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuItemQuantityBody'
+      responses:
+        '200':
+          description: Item updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SchoolDefaultMenuItem'
+    delete:
+      tags: [SchoolDefaults]
+      operationId: removeSchoolDefaultMenuItem
+      summary: Remove an item from the school's default menu
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Removed.
   /staff:
     get:
       tags: [Staff]
@@ -426,6 +562,483 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /products:
+    get:
+      tags: [Products]
+      operationId: listProducts
+      summary: List all products (staff-readable)
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: List of products.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+    post:
+      tags: [Products]
+      operationId: createProduct
+      summary: Create a new product (admin only)
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateProductBody'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+  /products/{id}:
+    patch:
+      tags: [Products]
+      operationId: updateProduct
+      summary: Update a product (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      tags: [Products]
+      operationId: deleteProduct
+      summary: Delete a product (admin only). Fails if the product is in use.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Product is in use.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /menu-templates:
+    get:
+      tags: [MenuTemplates]
+      operationId: listMenuTemplates
+      summary: List all menu templates with their items
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: List of templates.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MenuTemplate'
+    post:
+      tags: [MenuTemplates]
+      operationId: createMenuTemplate
+      summary: Create a new menu template (admin only)
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateMenuTemplateBody'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTemplate'
+  /menu-templates/{id}:
+    get:
+      tags: [MenuTemplates]
+      operationId: getMenuTemplate
+      summary: Get a menu template with its items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Template.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTemplate'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    patch:
+      tags: [MenuTemplates]
+      operationId: updateMenuTemplate
+      summary: Update a menu template's name/description (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuTemplateBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTemplate'
+    delete:
+      tags: [MenuTemplates]
+      operationId: deleteMenuTemplate
+      summary: Delete a menu template (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Deleted.
+  /menu-templates/{id}/items:
+    post:
+      tags: [MenuTemplates]
+      operationId: addMenuTemplateItem
+      summary: Add or update an item on the template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertMenuItemBody'
+      responses:
+        '200':
+          description: Item upserted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTemplateItem'
+  /menu-templates/{id}/items/{itemId}:
+    patch:
+      tags: [MenuTemplates]
+      operationId: updateMenuTemplateItem
+      summary: Update an item's quantity
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateMenuItemQuantityBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MenuTemplateItem'
+    delete:
+      tags: [MenuTemplates]
+      operationId: removeMenuTemplateItem
+      summary: Remove an item from a template
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Removed.
+  /app-settings:
+    get:
+      tags: [AppSettings]
+      operationId: getAppSettings
+      summary: Get global application settings
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Application settings.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSettings'
+    patch:
+      tags: [AppSettings]
+      operationId: updateAppSettings
+      summary: Update global application settings (admin only)
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateAppSettingsBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppSettings'
+  /weekly-orders:
+    get:
+      tags: [WeeklyOrders]
+      operationId: listWeeklyOrders
+      summary: List every school's order for a given week
+      parameters:
+        - name: weekStart
+          in: query
+          required: true
+          description: Monday date of the target week (YYYY-MM-DD).
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: One row per school for the chosen week.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeeklyOrderSummary'
+  /weekly-orders/{id}:
+    get:
+      tags: [WeeklyOrders]
+      operationId: getWeeklyOrder
+      summary: Get an existing weekly order with items
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Weekly order.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrder'
+    patch:
+      tags: [WeeklyOrders]
+      operationId: updateWeeklyOrder
+      summary: Update a weekly order's status or notes (admin only)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWeeklyOrderBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrder'
+  /weekly-orders/open-or-create:
+    post:
+      tags: [WeeklyOrders]
+      operationId: openOrCreateWeeklyOrder
+      summary: Open or create the weekly order row for a school for a given week
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OpenWeeklyOrderBody'
+      responses:
+        '200':
+          description: Weekly order, possibly newly created from defaults.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrder'
+  /weekly-orders/{id}/items:
+    post:
+      tags: [WeeklyOrders]
+      operationId: addWeeklyOrderItem
+      summary: Add or update an item on a weekly order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertWeeklyOrderItemBody'
+      responses:
+        '200':
+          description: Item upserted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrderItem'
+  /weekly-orders/{id}/items/{itemId}:
+    patch:
+      tags: [WeeklyOrders]
+      operationId: updateWeeklyOrderItem
+      summary: Update a weekly order item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWeeklyOrderItemBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrderItem'
+    delete:
+      tags: [WeeklyOrders]
+      operationId: removeWeeklyOrderItem
+      summary: Remove an item from a weekly order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Removed.
   /school-portal/{token}:
     get:
       tags: [SchoolPortal]
@@ -446,6 +1059,167 @@ paths:
                 $ref: '#/components/schemas/SchoolProfile'
         '404':
           description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /school-portal/{token}/order:
+    get:
+      tags: [SchoolPortal]
+      operationId: getSchoolPortalOrder
+      summary: Public — fetch this week's order for the school (creates from defaults when window is open)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Coordinator order view.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinatorOrderView'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /school-portal/{token}/order/items:
+    post:
+      tags: [SchoolPortal]
+      operationId: addPortalOrderItem
+      summary: Add or update an item on this week's order (window must be open)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertWeeklyOrderItemBody'
+      responses:
+        '200':
+          description: Item upserted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrderItem'
+        '403':
+          description: Order window is closed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /school-portal/{token}/order/items/{itemId}:
+    patch:
+      tags: [SchoolPortal]
+      operationId: updatePortalOrderItem
+      summary: Update an item on this week's order. Notes are always editable; quantity edits require an open window.
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWeeklyOrderItemBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WeeklyOrderItem'
+        '403':
+          description: Order window is closed and quantity change attempted.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      tags: [SchoolPortal]
+      operationId: removePortalOrderItem
+      summary: Remove an item (window must be open)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Removed.
+        '403':
+          description: Order window is closed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /school-portal/{token}/order/notes:
+    patch:
+      tags: [SchoolPortal]
+      operationId: updatePortalOrderNotes
+      summary: Update the order's notes (always allowed)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePortalOrderNotesBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinatorOrderView'
+  /school-portal/{token}/order/confirm:
+    post:
+      tags: [SchoolPortal]
+      operationId: confirmPortalOrder
+      summary: Coordinator confirms this week's order (window must be open)
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Order confirmed.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CoordinatorOrderView'
+        '403':
+          description: Order window is closed.
           content:
             application/json:
               schema:
@@ -642,3 +1416,230 @@ components:
         role:
           type: string
           enum: [admin, staff]
+    Product:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - category
+        - unit
+        - sku
+        - allergens
+        - active
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        category: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        sku: { type: [string, 'null'] }
+        allergens: { type: [string, 'null'] }
+        active: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateProductBody:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: [string, 'null'] }
+        category: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        sku: { type: [string, 'null'] }
+        allergens: { type: [string, 'null'] }
+        active: { type: boolean }
+    UpdateProductBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: [string, 'null'] }
+        category: { type: [string, 'null'] }
+        unit: { type: [string, 'null'] }
+        sku: { type: [string, 'null'] }
+        allergens: { type: [string, 'null'] }
+        active: { type: boolean }
+    MenuTemplateItem:
+      type: object
+      required: [id, templateId, productId, quantity, product]
+      properties:
+        id: { type: string }
+        templateId: { type: string }
+        productId: { type: string }
+        quantity: { type: integer, minimum: 0 }
+        product:
+          $ref: '#/components/schemas/Product'
+    MenuTemplate:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - items
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        name: { type: string }
+        description: { type: [string, 'null'] }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MenuTemplateItem'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateMenuTemplateBody:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: [string, 'null'] }
+    UpdateMenuTemplateBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        description: { type: [string, 'null'] }
+    UpsertMenuItemBody:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 0 }
+    UpdateMenuItemQuantityBody:
+      type: object
+      required: [quantity]
+      properties:
+        quantity: { type: integer, minimum: 0 }
+    SchoolDefaultMenuItem:
+      type: object
+      required: [id, schoolId, productId, quantity, product]
+      properties:
+        id: { type: string }
+        schoolId: { type: string }
+        productId: { type: string }
+        quantity: { type: integer, minimum: 0 }
+        product:
+          $ref: '#/components/schemas/Product'
+    StampTemplateBody:
+      type: object
+      required: [templateId]
+      properties:
+        templateId: { type: string, minLength: 1 }
+    AppSettings:
+      type: object
+      required: [orderWindowOpen, updatedAt]
+      properties:
+        orderWindowOpen: { type: boolean }
+        updatedAt: { type: string, format: date-time }
+    UpdateAppSettingsBody:
+      type: object
+      properties:
+        orderWindowOpen: { type: boolean }
+    WeeklyOrderItem:
+      type: object
+      required: [id, orderId, productId, quantity, note, product]
+      properties:
+        id: { type: string }
+        orderId: { type: string }
+        productId: { type: string }
+        quantity: { type: integer, minimum: 0 }
+        note: { type: [string, 'null'] }
+        product:
+          $ref: '#/components/schemas/Product'
+    WeeklyOrder:
+      type: object
+      required:
+        - id
+        - schoolId
+        - schoolName
+        - weekStart
+        - status
+        - notes
+        - confirmedAt
+        - items
+        - createdAt
+        - updatedAt
+      properties:
+        id: { type: string }
+        schoolId: { type: string }
+        schoolName: { type: string }
+        weekStart: { type: string }
+        status:
+          type: string
+          enum: [not_started, in_progress, confirmed]
+        notes: { type: [string, 'null'] }
+        confirmedAt: { type: [string, 'null'], format: date-time }
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/WeeklyOrderItem'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    WeeklyOrderSummary:
+      type: object
+      required:
+        - schoolId
+        - schoolName
+        - weekStart
+        - status
+        - itemCount
+        - notesPreview
+      properties:
+        orderId: { type: [string, 'null'] }
+        schoolId: { type: string }
+        schoolName: { type: string }
+        weekStart: { type: string }
+        status:
+          type: string
+          enum: [not_started, in_progress, confirmed]
+        itemCount: { type: integer, minimum: 0 }
+        notesPreview: { type: [string, 'null'] }
+        confirmedAt: { type: [string, 'null'], format: date-time }
+    UpdateWeeklyOrderBody:
+      type: object
+      properties:
+        notes: { type: [string, 'null'] }
+        status:
+          type: string
+          enum: [not_started, in_progress, confirmed]
+    OpenWeeklyOrderBody:
+      type: object
+      required: [schoolId, weekStart]
+      properties:
+        schoolId: { type: string, minLength: 1 }
+        weekStart: { type: string, minLength: 1 }
+    UpsertWeeklyOrderItemBody:
+      type: object
+      required: [productId, quantity]
+      properties:
+        productId: { type: string, minLength: 1 }
+        quantity: { type: integer, minimum: 0 }
+        note: { type: [string, 'null'] }
+    UpdateWeeklyOrderItemBody:
+      type: object
+      properties:
+        quantity: { type: integer, minimum: 0 }
+        note: { type: [string, 'null'] }
+    UpdatePortalOrderNotesBody:
+      type: object
+      required: [notes]
+      properties:
+        notes: { type: [string, 'null'] }
+    CoordinatorOrderView:
+      type: object
+      required:
+        - school
+        - orderWindowOpen
+        - weekStart
+        - order
+      properties:
+        school:
+          $ref: '#/components/schemas/SchoolProfile'
+        orderWindowOpen: { type: boolean }
+        weekStart: { type: string }
+        order:
+          oneOf:
+            - $ref: '#/components/schemas/WeeklyOrder'
+            - type: 'null'

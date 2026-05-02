@@ -190,6 +190,233 @@ export interface InviteStaffBody {
   role: InviteStaffBodyRole;
 }
 
+export interface Product {
+  id: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  /** @nullable */
+  category: string | null;
+  /** @nullable */
+  unit: string | null;
+  /** @nullable */
+  sku: string | null;
+  /** @nullable */
+  allergens: string | null;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateProductBody {
+  /** @minLength 1 */
+  name: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  unit?: string | null;
+  /** @nullable */
+  sku?: string | null;
+  /** @nullable */
+  allergens?: string | null;
+  active?: boolean;
+}
+
+export interface UpdateProductBody {
+  /** @minLength 1 */
+  name?: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  category?: string | null;
+  /** @nullable */
+  unit?: string | null;
+  /** @nullable */
+  sku?: string | null;
+  /** @nullable */
+  allergens?: string | null;
+  active?: boolean;
+}
+
+export interface MenuTemplateItem {
+  id: string;
+  templateId: string;
+  productId: string;
+  /** @minimum 0 */
+  quantity: number;
+  product: Product;
+}
+
+export interface MenuTemplate {
+  id: string;
+  name: string;
+  /** @nullable */
+  description: string | null;
+  items: MenuTemplateItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateMenuTemplateBody {
+  /** @minLength 1 */
+  name: string;
+  /** @nullable */
+  description?: string | null;
+}
+
+export interface UpdateMenuTemplateBody {
+  /** @minLength 1 */
+  name?: string;
+  /** @nullable */
+  description?: string | null;
+}
+
+export interface UpsertMenuItemBody {
+  /** @minLength 1 */
+  productId: string;
+  /** @minimum 0 */
+  quantity: number;
+}
+
+export interface UpdateMenuItemQuantityBody {
+  /** @minimum 0 */
+  quantity: number;
+}
+
+export interface SchoolDefaultMenuItem {
+  id: string;
+  schoolId: string;
+  productId: string;
+  /** @minimum 0 */
+  quantity: number;
+  product: Product;
+}
+
+export interface StampTemplateBody {
+  /** @minLength 1 */
+  templateId: string;
+}
+
+export interface AppSettings {
+  orderWindowOpen: boolean;
+  updatedAt: string;
+}
+
+export interface UpdateAppSettingsBody {
+  orderWindowOpen?: boolean;
+}
+
+export interface WeeklyOrderItem {
+  id: string;
+  orderId: string;
+  productId: string;
+  /** @minimum 0 */
+  quantity: number;
+  /** @nullable */
+  note: string | null;
+  product: Product;
+}
+
+export type WeeklyOrderStatus =
+  (typeof WeeklyOrderStatus)[keyof typeof WeeklyOrderStatus];
+
+export const WeeklyOrderStatus = {
+  not_started: "not_started",
+  in_progress: "in_progress",
+  confirmed: "confirmed",
+} as const;
+
+export interface WeeklyOrder {
+  id: string;
+  schoolId: string;
+  schoolName: string;
+  weekStart: string;
+  status: WeeklyOrderStatus;
+  /** @nullable */
+  notes: string | null;
+  /** @nullable */
+  confirmedAt: string | null;
+  items: WeeklyOrderItem[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type WeeklyOrderSummaryStatus =
+  (typeof WeeklyOrderSummaryStatus)[keyof typeof WeeklyOrderSummaryStatus];
+
+export const WeeklyOrderSummaryStatus = {
+  not_started: "not_started",
+  in_progress: "in_progress",
+  confirmed: "confirmed",
+} as const;
+
+export interface WeeklyOrderSummary {
+  /** @nullable */
+  orderId?: string | null;
+  schoolId: string;
+  schoolName: string;
+  weekStart: string;
+  status: WeeklyOrderSummaryStatus;
+  /** @minimum 0 */
+  itemCount: number;
+  /** @nullable */
+  notesPreview: string | null;
+  /** @nullable */
+  confirmedAt?: string | null;
+}
+
+export type UpdateWeeklyOrderBodyStatus =
+  (typeof UpdateWeeklyOrderBodyStatus)[keyof typeof UpdateWeeklyOrderBodyStatus];
+
+export const UpdateWeeklyOrderBodyStatus = {
+  not_started: "not_started",
+  in_progress: "in_progress",
+  confirmed: "confirmed",
+} as const;
+
+export interface UpdateWeeklyOrderBody {
+  /** @nullable */
+  notes?: string | null;
+  status?: UpdateWeeklyOrderBodyStatus;
+}
+
+export interface OpenWeeklyOrderBody {
+  /** @minLength 1 */
+  schoolId: string;
+  /** @minLength 1 */
+  weekStart: string;
+}
+
+export interface UpsertWeeklyOrderItemBody {
+  /** @minLength 1 */
+  productId: string;
+  /** @minimum 0 */
+  quantity: number;
+  /** @nullable */
+  note?: string | null;
+}
+
+export interface UpdateWeeklyOrderItemBody {
+  /** @minimum 0 */
+  quantity?: number;
+  /** @nullable */
+  note?: string | null;
+}
+
+export interface UpdatePortalOrderNotesBody {
+  /** @nullable */
+  notes: string | null;
+}
+
+export interface CoordinatorOrderView {
+  school: SchoolProfile;
+  orderWindowOpen: boolean;
+  weekStart: string;
+  order: WeeklyOrder | null;
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -203,4 +430,11 @@ export type HandleBrowserLoginCallbackParams = {
   code?: string;
   state?: string;
   iss?: string;
+};
+
+export type ListWeeklyOrdersParams = {
+  /**
+   * Monday date of the target week (YYYY-MM-DD).
+   */
+  weekStart: string;
 };

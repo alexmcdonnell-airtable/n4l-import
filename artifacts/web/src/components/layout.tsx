@@ -41,10 +41,19 @@ export function Header() {
           </span>
           <span className="text-foreground">Nutrition for Learning</span>
         </Link>
-        <nav className="flex items-center gap-1">
+        <nav className="flex items-center gap-1 flex-wrap">
           <NavLink href="/">Dashboard</NavLink>
+          <NavLink href="/orders">Weekly orders</NavLink>
           {role === "admin" && <NavLink href="/schools">Schools</NavLink>}
+          {role === "admin" && (
+            <NavLink href="/school-defaults">Default menus</NavLink>
+          )}
+          {role === "admin" && <NavLink href="/products">Products</NavLink>}
+          {role === "admin" && (
+            <NavLink href="/menu-templates">Templates</NavLink>
+          )}
           {role === "admin" && <NavLink href="/staff">Staff</NavLink>}
+          {role === "admin" && <NavLink href="/settings">Settings</NavLink>}
         </nav>
         <div className="flex items-center gap-3">
           <div className="text-sm text-muted-foreground hidden sm:block">

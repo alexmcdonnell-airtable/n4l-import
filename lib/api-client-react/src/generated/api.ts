@@ -17,22 +17,45 @@ import type {
 } from "@tanstack/react-query";
 
 import type {
+  AppSettings,
   AuthUserEnvelope,
   BeginBrowserLoginParams,
+  CoordinatorOrderView,
+  CreateMenuTemplateBody,
+  CreateProductBody,
   CreateSchoolBody,
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   InviteStaffBody,
+  ListWeeklyOrdersParams,
   LogoutSuccess,
+  MenuTemplate,
+  MenuTemplateItem,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
+  OpenWeeklyOrderBody,
+  Product,
   School,
+  SchoolDefaultMenuItem,
   SchoolProfile,
   SchoolWithToken,
   StaffMember,
+  StampTemplateBody,
+  UpdateAppSettingsBody,
+  UpdateMenuItemQuantityBody,
+  UpdateMenuTemplateBody,
+  UpdatePortalOrderNotesBody,
+  UpdateProductBody,
   UpdateSchoolBody,
   UpdateStaffBody,
+  UpdateWeeklyOrderBody,
+  UpdateWeeklyOrderItemBody,
+  UpsertMenuItemBody,
+  UpsertWeeklyOrderItemBody,
+  WeeklyOrder,
+  WeeklyOrderItem,
+  WeeklyOrderSummary,
 } from "./api.schemas";
 
 import { customFetch } from "../custom-fetch";
@@ -1144,6 +1167,457 @@ export const useResetSchoolToken = <
 };
 
 /**
+ * @summary List the school's default menu items
+ */
+export const getGetSchoolDefaultMenuUrl = (id: string) => {
+  return `/api/schools/${id}/default-menu`;
+};
+
+export const getSchoolDefaultMenu = async (
+  id: string,
+  options?: RequestInit,
+): Promise<SchoolDefaultMenuItem[]> => {
+  return customFetch<SchoolDefaultMenuItem[]>(getGetSchoolDefaultMenuUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSchoolDefaultMenuQueryKey = (id: string) => {
+  return [`/api/schools/${id}/default-menu`] as const;
+};
+
+export const getGetSchoolDefaultMenuQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSchoolDefaultMenu>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSchoolDefaultMenu>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSchoolDefaultMenuQueryKey(id);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSchoolDefaultMenu>>
+  > = ({ signal }) => getSchoolDefaultMenu(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSchoolDefaultMenu>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSchoolDefaultMenuQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSchoolDefaultMenu>>
+>;
+export type GetSchoolDefaultMenuQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List the school's default menu items
+ */
+
+export function useGetSchoolDefaultMenu<
+  TData = Awaited<ReturnType<typeof getSchoolDefaultMenu>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSchoolDefaultMenu>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSchoolDefaultMenuQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add a single product to the school's default menu
+ */
+export const getAddSchoolDefaultMenuItemUrl = (id: string) => {
+  return `/api/schools/${id}/default-menu`;
+};
+
+export const addSchoolDefaultMenuItem = async (
+  id: string,
+  upsertMenuItemBody: UpsertMenuItemBody,
+  options?: RequestInit,
+): Promise<SchoolDefaultMenuItem> => {
+  return customFetch<SchoolDefaultMenuItem>(
+    getAddSchoolDefaultMenuItemUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(upsertMenuItemBody),
+    },
+  );
+};
+
+export const getAddSchoolDefaultMenuItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertMenuItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertMenuItemBody> },
+  TContext
+> => {
+  const mutationKey = ["addSchoolDefaultMenuItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>,
+    { id: string; data: BodyType<UpsertMenuItemBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return addSchoolDefaultMenuItem(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddSchoolDefaultMenuItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>
+>;
+export type AddSchoolDefaultMenuItemMutationBody = BodyType<UpsertMenuItemBody>;
+export type AddSchoolDefaultMenuItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add a single product to the school's default menu
+ */
+export const useAddSchoolDefaultMenuItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertMenuItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertMenuItemBody> },
+  TContext
+> => {
+  return useMutation(getAddSchoolDefaultMenuItemMutationOptions(options));
+};
+
+/**
+ * @summary Replace the school's default menu by stamping a template
+ */
+export const getStampTemplateOntoSchoolUrl = (id: string) => {
+  return `/api/schools/${id}/default-menu/stamp`;
+};
+
+export const stampTemplateOntoSchool = async (
+  id: string,
+  stampTemplateBody: StampTemplateBody,
+  options?: RequestInit,
+): Promise<SchoolDefaultMenuItem[]> => {
+  return customFetch<SchoolDefaultMenuItem[]>(
+    getStampTemplateOntoSchoolUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(stampTemplateBody),
+    },
+  );
+};
+
+export const getStampTemplateOntoSchoolMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof stampTemplateOntoSchool>>,
+    TError,
+    { id: string; data: BodyType<StampTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof stampTemplateOntoSchool>>,
+  TError,
+  { id: string; data: BodyType<StampTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["stampTemplateOntoSchool"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof stampTemplateOntoSchool>>,
+    { id: string; data: BodyType<StampTemplateBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return stampTemplateOntoSchool(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type StampTemplateOntoSchoolMutationResult = NonNullable<
+  Awaited<ReturnType<typeof stampTemplateOntoSchool>>
+>;
+export type StampTemplateOntoSchoolMutationBody = BodyType<StampTemplateBody>;
+export type StampTemplateOntoSchoolMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Replace the school's default menu by stamping a template
+ */
+export const useStampTemplateOntoSchool = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof stampTemplateOntoSchool>>,
+    TError,
+    { id: string; data: BodyType<StampTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof stampTemplateOntoSchool>>,
+  TError,
+  { id: string; data: BodyType<StampTemplateBody> },
+  TContext
+> => {
+  return useMutation(getStampTemplateOntoSchoolMutationOptions(options));
+};
+
+/**
+ * @summary Update a default menu item's quantity
+ */
+export const getUpdateSchoolDefaultMenuItemUrl = (
+  id: string,
+  itemId: string,
+) => {
+  return `/api/schools/${id}/default-menu/${itemId}`;
+};
+
+export const updateSchoolDefaultMenuItem = async (
+  id: string,
+  itemId: string,
+  updateMenuItemQuantityBody: UpdateMenuItemQuantityBody,
+  options?: RequestInit,
+): Promise<SchoolDefaultMenuItem> => {
+  return customFetch<SchoolDefaultMenuItem>(
+    getUpdateSchoolDefaultMenuItemUrl(id, itemId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateMenuItemQuantityBody),
+    },
+  );
+};
+
+export const getUpdateSchoolDefaultMenuItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+  TContext
+> => {
+  const mutationKey = ["updateSchoolDefaultMenuItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> }
+  > = (props) => {
+    const { id, itemId, data } = props ?? {};
+
+    return updateSchoolDefaultMenuItem(id, itemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSchoolDefaultMenuItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>
+>;
+export type UpdateSchoolDefaultMenuItemMutationBody =
+  BodyType<UpdateMenuItemQuantityBody>;
+export type UpdateSchoolDefaultMenuItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a default menu item's quantity
+ */
+export const useUpdateSchoolDefaultMenuItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+  TContext
+> => {
+  return useMutation(getUpdateSchoolDefaultMenuItemMutationOptions(options));
+};
+
+/**
+ * @summary Remove an item from the school's default menu
+ */
+export const getRemoveSchoolDefaultMenuItemUrl = (
+  id: string,
+  itemId: string,
+) => {
+  return `/api/schools/${id}/default-menu/${itemId}`;
+};
+
+export const removeSchoolDefaultMenuItem = async (
+  id: string,
+  itemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveSchoolDefaultMenuItemUrl(id, itemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveSchoolDefaultMenuItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  const mutationKey = ["removeSchoolDefaultMenuItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>,
+    { id: string; itemId: string }
+  > = (props) => {
+    const { id, itemId } = props ?? {};
+
+    return removeSchoolDefaultMenuItem(id, itemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveSchoolDefaultMenuItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>
+>;
+
+export type RemoveSchoolDefaultMenuItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Remove an item from the school's default menu
+ */
+export const useRemoveSchoolDefaultMenuItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeSchoolDefaultMenuItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  return useMutation(getRemoveSchoolDefaultMenuItemMutationOptions(options));
+};
+
+/**
  * @summary List all staff users (including invited-only allowlist entries)
  */
 export const getListStaffUrl = () => {
@@ -1468,6 +1942,1801 @@ export const useRemoveStaff = <
 };
 
 /**
+ * @summary List all products (staff-readable)
+ */
+export const getListProductsUrl = () => {
+  return `/api/products`;
+};
+
+export const listProducts = async (
+  options?: RequestInit,
+): Promise<Product[]> => {
+  return customFetch<Product[]>(getListProductsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListProductsQueryKey = () => {
+  return [`/api/products`] as const;
+};
+
+export const getListProductsQueryOptions = <
+  TData = Awaited<ReturnType<typeof listProducts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listProducts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListProductsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listProducts>>> = ({
+    signal,
+  }) => listProducts({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listProducts>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListProductsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listProducts>>
+>;
+export type ListProductsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all products (staff-readable)
+ */
+
+export function useListProducts<
+  TData = Awaited<ReturnType<typeof listProducts>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listProducts>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListProductsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new product (admin only)
+ */
+export const getCreateProductUrl = () => {
+  return `/api/products`;
+};
+
+export const createProduct = async (
+  createProductBody: CreateProductBody,
+  options?: RequestInit,
+): Promise<Product> => {
+  return customFetch<Product>(getCreateProductUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createProductBody),
+  });
+};
+
+export const getCreateProductMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProduct>>,
+    TError,
+    { data: BodyType<CreateProductBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createProduct>>,
+  TError,
+  { data: BodyType<CreateProductBody> },
+  TContext
+> => {
+  const mutationKey = ["createProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createProduct>>,
+    { data: BodyType<CreateProductBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createProduct(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createProduct>>
+>;
+export type CreateProductMutationBody = BodyType<CreateProductBody>;
+export type CreateProductMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new product (admin only)
+ */
+export const useCreateProduct = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createProduct>>,
+    TError,
+    { data: BodyType<CreateProductBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createProduct>>,
+  TError,
+  { data: BodyType<CreateProductBody> },
+  TContext
+> => {
+  return useMutation(getCreateProductMutationOptions(options));
+};
+
+/**
+ * @summary Update a product (admin only)
+ */
+export const getUpdateProductUrl = (id: string) => {
+  return `/api/products/${id}`;
+};
+
+export const updateProduct = async (
+  id: string,
+  updateProductBody: UpdateProductBody,
+  options?: RequestInit,
+): Promise<Product> => {
+  return customFetch<Product>(getUpdateProductUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateProductBody),
+  });
+};
+
+export const getUpdateProductMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProduct>>,
+    TError,
+    { id: string; data: BodyType<UpdateProductBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateProduct>>,
+  TError,
+  { id: string; data: BodyType<UpdateProductBody> },
+  TContext
+> => {
+  const mutationKey = ["updateProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateProduct>>,
+    { id: string; data: BodyType<UpdateProductBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateProduct(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateProduct>>
+>;
+export type UpdateProductMutationBody = BodyType<UpdateProductBody>;
+export type UpdateProductMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update a product (admin only)
+ */
+export const useUpdateProduct = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateProduct>>,
+    TError,
+    { id: string; data: BodyType<UpdateProductBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateProduct>>,
+  TError,
+  { id: string; data: BodyType<UpdateProductBody> },
+  TContext
+> => {
+  return useMutation(getUpdateProductMutationOptions(options));
+};
+
+/**
+ * @summary Delete a product (admin only). Fails if the product is in use.
+ */
+export const getDeleteProductUrl = (id: string) => {
+  return `/api/products/${id}`;
+};
+
+export const deleteProduct = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteProductUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteProductMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProduct>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteProduct>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteProduct"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteProduct>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteProduct(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteProductMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteProduct>>
+>;
+
+export type DeleteProductMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Delete a product (admin only). Fails if the product is in use.
+ */
+export const useDeleteProduct = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteProduct>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteProduct>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteProductMutationOptions(options));
+};
+
+/**
+ * @summary List all menu templates with their items
+ */
+export const getListMenuTemplatesUrl = () => {
+  return `/api/menu-templates`;
+};
+
+export const listMenuTemplates = async (
+  options?: RequestInit,
+): Promise<MenuTemplate[]> => {
+  return customFetch<MenuTemplate[]>(getListMenuTemplatesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListMenuTemplatesQueryKey = () => {
+  return [`/api/menu-templates`] as const;
+};
+
+export const getListMenuTemplatesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listMenuTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMenuTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListMenuTemplatesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listMenuTemplates>>
+  > = ({ signal }) => listMenuTemplates({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listMenuTemplates>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListMenuTemplatesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listMenuTemplates>>
+>;
+export type ListMenuTemplatesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all menu templates with their items
+ */
+
+export function useListMenuTemplates<
+  TData = Awaited<ReturnType<typeof listMenuTemplates>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listMenuTemplates>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListMenuTemplatesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a new menu template (admin only)
+ */
+export const getCreateMenuTemplateUrl = () => {
+  return `/api/menu-templates`;
+};
+
+export const createMenuTemplate = async (
+  createMenuTemplateBody: CreateMenuTemplateBody,
+  options?: RequestInit,
+): Promise<MenuTemplate> => {
+  return customFetch<MenuTemplate>(getCreateMenuTemplateUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createMenuTemplateBody),
+  });
+};
+
+export const getCreateMenuTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMenuTemplate>>,
+    TError,
+    { data: BodyType<CreateMenuTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createMenuTemplate>>,
+  TError,
+  { data: BodyType<CreateMenuTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["createMenuTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createMenuTemplate>>,
+    { data: BodyType<CreateMenuTemplateBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createMenuTemplate(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateMenuTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createMenuTemplate>>
+>;
+export type CreateMenuTemplateMutationBody = BodyType<CreateMenuTemplateBody>;
+export type CreateMenuTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a new menu template (admin only)
+ */
+export const useCreateMenuTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createMenuTemplate>>,
+    TError,
+    { data: BodyType<CreateMenuTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createMenuTemplate>>,
+  TError,
+  { data: BodyType<CreateMenuTemplateBody> },
+  TContext
+> => {
+  return useMutation(getCreateMenuTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Get a menu template with its items
+ */
+export const getGetMenuTemplateUrl = (id: string) => {
+  return `/api/menu-templates/${id}`;
+};
+
+export const getMenuTemplate = async (
+  id: string,
+  options?: RequestInit,
+): Promise<MenuTemplate> => {
+  return customFetch<MenuTemplate>(getGetMenuTemplateUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetMenuTemplateQueryKey = (id: string) => {
+  return [`/api/menu-templates/${id}`] as const;
+};
+
+export const getGetMenuTemplateQueryOptions = <
+  TData = Awaited<ReturnType<typeof getMenuTemplate>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMenuTemplate>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetMenuTemplateQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getMenuTemplate>>> = ({
+    signal,
+  }) => getMenuTemplate(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getMenuTemplate>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetMenuTemplateQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getMenuTemplate>>
+>;
+export type GetMenuTemplateQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Get a menu template with its items
+ */
+
+export function useGetMenuTemplate<
+  TData = Awaited<ReturnType<typeof getMenuTemplate>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getMenuTemplate>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetMenuTemplateQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a menu template's name/description (admin only)
+ */
+export const getUpdateMenuTemplateUrl = (id: string) => {
+  return `/api/menu-templates/${id}`;
+};
+
+export const updateMenuTemplate = async (
+  id: string,
+  updateMenuTemplateBody: UpdateMenuTemplateBody,
+  options?: RequestInit,
+): Promise<MenuTemplate> => {
+  return customFetch<MenuTemplate>(getUpdateMenuTemplateUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateMenuTemplateBody),
+  });
+};
+
+export const getUpdateMenuTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMenuTemplate>>,
+    TError,
+    { id: string; data: BodyType<UpdateMenuTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMenuTemplate>>,
+  TError,
+  { id: string; data: BodyType<UpdateMenuTemplateBody> },
+  TContext
+> => {
+  const mutationKey = ["updateMenuTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMenuTemplate>>,
+    { id: string; data: BodyType<UpdateMenuTemplateBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateMenuTemplate(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMenuTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMenuTemplate>>
+>;
+export type UpdateMenuTemplateMutationBody = BodyType<UpdateMenuTemplateBody>;
+export type UpdateMenuTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a menu template's name/description (admin only)
+ */
+export const useUpdateMenuTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMenuTemplate>>,
+    TError,
+    { id: string; data: BodyType<UpdateMenuTemplateBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateMenuTemplate>>,
+  TError,
+  { id: string; data: BodyType<UpdateMenuTemplateBody> },
+  TContext
+> => {
+  return useMutation(getUpdateMenuTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Delete a menu template (admin only)
+ */
+export const getDeleteMenuTemplateUrl = (id: string) => {
+  return `/api/menu-templates/${id}`;
+};
+
+export const deleteMenuTemplate = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteMenuTemplateUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteMenuTemplateMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMenuTemplate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteMenuTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteMenuTemplate"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteMenuTemplate>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteMenuTemplate(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteMenuTemplateMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteMenuTemplate>>
+>;
+
+export type DeleteMenuTemplateMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Delete a menu template (admin only)
+ */
+export const useDeleteMenuTemplate = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteMenuTemplate>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteMenuTemplate>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteMenuTemplateMutationOptions(options));
+};
+
+/**
+ * @summary Add or update an item on the template
+ */
+export const getAddMenuTemplateItemUrl = (id: string) => {
+  return `/api/menu-templates/${id}/items`;
+};
+
+export const addMenuTemplateItem = async (
+  id: string,
+  upsertMenuItemBody: UpsertMenuItemBody,
+  options?: RequestInit,
+): Promise<MenuTemplateItem> => {
+  return customFetch<MenuTemplateItem>(getAddMenuTemplateItemUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(upsertMenuItemBody),
+  });
+};
+
+export const getAddMenuTemplateItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addMenuTemplateItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertMenuItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addMenuTemplateItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertMenuItemBody> },
+  TContext
+> => {
+  const mutationKey = ["addMenuTemplateItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addMenuTemplateItem>>,
+    { id: string; data: BodyType<UpsertMenuItemBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return addMenuTemplateItem(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddMenuTemplateItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addMenuTemplateItem>>
+>;
+export type AddMenuTemplateItemMutationBody = BodyType<UpsertMenuItemBody>;
+export type AddMenuTemplateItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add or update an item on the template
+ */
+export const useAddMenuTemplateItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addMenuTemplateItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertMenuItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addMenuTemplateItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertMenuItemBody> },
+  TContext
+> => {
+  return useMutation(getAddMenuTemplateItemMutationOptions(options));
+};
+
+/**
+ * @summary Update an item's quantity
+ */
+export const getUpdateMenuTemplateItemUrl = (id: string, itemId: string) => {
+  return `/api/menu-templates/${id}/items/${itemId}`;
+};
+
+export const updateMenuTemplateItem = async (
+  id: string,
+  itemId: string,
+  updateMenuItemQuantityBody: UpdateMenuItemQuantityBody,
+  options?: RequestInit,
+): Promise<MenuTemplateItem> => {
+  return customFetch<MenuTemplateItem>(
+    getUpdateMenuTemplateItemUrl(id, itemId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateMenuItemQuantityBody),
+    },
+  );
+};
+
+export const getUpdateMenuTemplateItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMenuTemplateItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateMenuTemplateItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+  TContext
+> => {
+  const mutationKey = ["updateMenuTemplateItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateMenuTemplateItem>>,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> }
+  > = (props) => {
+    const { id, itemId, data } = props ?? {};
+
+    return updateMenuTemplateItem(id, itemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateMenuTemplateItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateMenuTemplateItem>>
+>;
+export type UpdateMenuTemplateItemMutationBody =
+  BodyType<UpdateMenuItemQuantityBody>;
+export type UpdateMenuTemplateItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update an item's quantity
+ */
+export const useUpdateMenuTemplateItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateMenuTemplateItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateMenuTemplateItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateMenuItemQuantityBody> },
+  TContext
+> => {
+  return useMutation(getUpdateMenuTemplateItemMutationOptions(options));
+};
+
+/**
+ * @summary Remove an item from a template
+ */
+export const getRemoveMenuTemplateItemUrl = (id: string, itemId: string) => {
+  return `/api/menu-templates/${id}/items/${itemId}`;
+};
+
+export const removeMenuTemplateItem = async (
+  id: string,
+  itemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveMenuTemplateItemUrl(id, itemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveMenuTemplateItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeMenuTemplateItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeMenuTemplateItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  const mutationKey = ["removeMenuTemplateItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeMenuTemplateItem>>,
+    { id: string; itemId: string }
+  > = (props) => {
+    const { id, itemId } = props ?? {};
+
+    return removeMenuTemplateItem(id, itemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveMenuTemplateItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeMenuTemplateItem>>
+>;
+
+export type RemoveMenuTemplateItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Remove an item from a template
+ */
+export const useRemoveMenuTemplateItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeMenuTemplateItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeMenuTemplateItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  return useMutation(getRemoveMenuTemplateItemMutationOptions(options));
+};
+
+/**
+ * @summary Get global application settings
+ */
+export const getGetAppSettingsUrl = () => {
+  return `/api/app-settings`;
+};
+
+export const getAppSettings = async (
+  options?: RequestInit,
+): Promise<AppSettings> => {
+  return customFetch<AppSettings>(getGetAppSettingsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetAppSettingsQueryKey = () => {
+  return [`/api/app-settings`] as const;
+};
+
+export const getGetAppSettingsQueryOptions = <
+  TData = Awaited<ReturnType<typeof getAppSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAppSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetAppSettingsQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getAppSettings>>> = ({
+    signal,
+  }) => getAppSettings({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getAppSettings>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetAppSettingsQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getAppSettings>>
+>;
+export type GetAppSettingsQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get global application settings
+ */
+
+export function useGetAppSettings<
+  TData = Awaited<ReturnType<typeof getAppSettings>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getAppSettings>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetAppSettingsQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update global application settings (admin only)
+ */
+export const getUpdateAppSettingsUrl = () => {
+  return `/api/app-settings`;
+};
+
+export const updateAppSettings = async (
+  updateAppSettingsBody: UpdateAppSettingsBody,
+  options?: RequestInit,
+): Promise<AppSettings> => {
+  return customFetch<AppSettings>(getUpdateAppSettingsUrl(), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateAppSettingsBody),
+  });
+};
+
+export const getUpdateAppSettingsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAppSettings>>,
+    TError,
+    { data: BodyType<UpdateAppSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateAppSettings>>,
+  TError,
+  { data: BodyType<UpdateAppSettingsBody> },
+  TContext
+> => {
+  const mutationKey = ["updateAppSettings"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateAppSettings>>,
+    { data: BodyType<UpdateAppSettingsBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return updateAppSettings(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateAppSettingsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateAppSettings>>
+>;
+export type UpdateAppSettingsMutationBody = BodyType<UpdateAppSettingsBody>;
+export type UpdateAppSettingsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update global application settings (admin only)
+ */
+export const useUpdateAppSettings = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateAppSettings>>,
+    TError,
+    { data: BodyType<UpdateAppSettingsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateAppSettings>>,
+  TError,
+  { data: BodyType<UpdateAppSettingsBody> },
+  TContext
+> => {
+  return useMutation(getUpdateAppSettingsMutationOptions(options));
+};
+
+/**
+ * @summary List every school's order for a given week
+ */
+export const getListWeeklyOrdersUrl = (params: ListWeeklyOrdersParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/weekly-orders?${stringifiedParams}`
+    : `/api/weekly-orders`;
+};
+
+export const listWeeklyOrders = async (
+  params: ListWeeklyOrdersParams,
+  options?: RequestInit,
+): Promise<WeeklyOrderSummary[]> => {
+  return customFetch<WeeklyOrderSummary[]>(getListWeeklyOrdersUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListWeeklyOrdersQueryKey = (
+  params?: ListWeeklyOrdersParams,
+) => {
+  return [`/api/weekly-orders`, ...(params ? [params] : [])] as const;
+};
+
+export const getListWeeklyOrdersQueryOptions = <
+  TData = Awaited<ReturnType<typeof listWeeklyOrders>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListWeeklyOrdersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listWeeklyOrders>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListWeeklyOrdersQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listWeeklyOrders>>
+  > = ({ signal }) => listWeeklyOrders(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listWeeklyOrders>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListWeeklyOrdersQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listWeeklyOrders>>
+>;
+export type ListWeeklyOrdersQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List every school's order for a given week
+ */
+
+export function useListWeeklyOrders<
+  TData = Awaited<ReturnType<typeof listWeeklyOrders>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListWeeklyOrdersParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listWeeklyOrders>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListWeeklyOrdersQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get an existing weekly order with items
+ */
+export const getGetWeeklyOrderUrl = (id: string) => {
+  return `/api/weekly-orders/${id}`;
+};
+
+export const getWeeklyOrder = async (
+  id: string,
+  options?: RequestInit,
+): Promise<WeeklyOrder> => {
+  return customFetch<WeeklyOrder>(getGetWeeklyOrderUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetWeeklyOrderQueryKey = (id: string) => {
+  return [`/api/weekly-orders/${id}`] as const;
+};
+
+export const getGetWeeklyOrderQueryOptions = <
+  TData = Awaited<ReturnType<typeof getWeeklyOrder>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWeeklyOrder>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetWeeklyOrderQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getWeeklyOrder>>> = ({
+    signal,
+  }) => getWeeklyOrder(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getWeeklyOrder>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetWeeklyOrderQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getWeeklyOrder>>
+>;
+export type GetWeeklyOrderQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get an existing weekly order with items
+ */
+
+export function useGetWeeklyOrder<
+  TData = Awaited<ReturnType<typeof getWeeklyOrder>>,
+  TError = ErrorType<unknown>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getWeeklyOrder>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetWeeklyOrderQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Update a weekly order's status or notes (admin only)
+ */
+export const getUpdateWeeklyOrderUrl = (id: string) => {
+  return `/api/weekly-orders/${id}`;
+};
+
+export const updateWeeklyOrder = async (
+  id: string,
+  updateWeeklyOrderBody: UpdateWeeklyOrderBody,
+  options?: RequestInit,
+): Promise<WeeklyOrder> => {
+  return customFetch<WeeklyOrder>(getUpdateWeeklyOrderUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateWeeklyOrderBody),
+  });
+};
+
+export const getUpdateWeeklyOrderMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWeeklyOrder>>,
+    TError,
+    { id: string; data: BodyType<UpdateWeeklyOrderBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateWeeklyOrder>>,
+  TError,
+  { id: string; data: BodyType<UpdateWeeklyOrderBody> },
+  TContext
+> => {
+  const mutationKey = ["updateWeeklyOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateWeeklyOrder>>,
+    { id: string; data: BodyType<UpdateWeeklyOrderBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateWeeklyOrder(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateWeeklyOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateWeeklyOrder>>
+>;
+export type UpdateWeeklyOrderMutationBody = BodyType<UpdateWeeklyOrderBody>;
+export type UpdateWeeklyOrderMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a weekly order's status or notes (admin only)
+ */
+export const useUpdateWeeklyOrder = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWeeklyOrder>>,
+    TError,
+    { id: string; data: BodyType<UpdateWeeklyOrderBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateWeeklyOrder>>,
+  TError,
+  { id: string; data: BodyType<UpdateWeeklyOrderBody> },
+  TContext
+> => {
+  return useMutation(getUpdateWeeklyOrderMutationOptions(options));
+};
+
+/**
+ * @summary Open or create the weekly order row for a school for a given week
+ */
+export const getOpenOrCreateWeeklyOrderUrl = () => {
+  return `/api/weekly-orders/open-or-create`;
+};
+
+export const openOrCreateWeeklyOrder = async (
+  openWeeklyOrderBody: OpenWeeklyOrderBody,
+  options?: RequestInit,
+): Promise<WeeklyOrder> => {
+  return customFetch<WeeklyOrder>(getOpenOrCreateWeeklyOrderUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(openWeeklyOrderBody),
+  });
+};
+
+export const getOpenOrCreateWeeklyOrderMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>,
+    TError,
+    { data: BodyType<OpenWeeklyOrderBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>,
+  TError,
+  { data: BodyType<OpenWeeklyOrderBody> },
+  TContext
+> => {
+  const mutationKey = ["openOrCreateWeeklyOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>,
+    { data: BodyType<OpenWeeklyOrderBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return openOrCreateWeeklyOrder(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type OpenOrCreateWeeklyOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>
+>;
+export type OpenOrCreateWeeklyOrderMutationBody = BodyType<OpenWeeklyOrderBody>;
+export type OpenOrCreateWeeklyOrderMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Open or create the weekly order row for a school for a given week
+ */
+export const useOpenOrCreateWeeklyOrder = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>,
+    TError,
+    { data: BodyType<OpenWeeklyOrderBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof openOrCreateWeeklyOrder>>,
+  TError,
+  { data: BodyType<OpenWeeklyOrderBody> },
+  TContext
+> => {
+  return useMutation(getOpenOrCreateWeeklyOrderMutationOptions(options));
+};
+
+/**
+ * @summary Add or update an item on a weekly order
+ */
+export const getAddWeeklyOrderItemUrl = (id: string) => {
+  return `/api/weekly-orders/${id}/items`;
+};
+
+export const addWeeklyOrderItem = async (
+  id: string,
+  upsertWeeklyOrderItemBody: UpsertWeeklyOrderItemBody,
+  options?: RequestInit,
+): Promise<WeeklyOrderItem> => {
+  return customFetch<WeeklyOrderItem>(getAddWeeklyOrderItemUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(upsertWeeklyOrderItemBody),
+  });
+};
+
+export const getAddWeeklyOrderItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addWeeklyOrderItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addWeeklyOrderItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+  TContext
+> => {
+  const mutationKey = ["addWeeklyOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addWeeklyOrderItem>>,
+    { id: string; data: BodyType<UpsertWeeklyOrderItemBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return addWeeklyOrderItem(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddWeeklyOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addWeeklyOrderItem>>
+>;
+export type AddWeeklyOrderItemMutationBody =
+  BodyType<UpsertWeeklyOrderItemBody>;
+export type AddWeeklyOrderItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Add or update an item on a weekly order
+ */
+export const useAddWeeklyOrderItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addWeeklyOrderItem>>,
+    TError,
+    { id: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addWeeklyOrderItem>>,
+  TError,
+  { id: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+  TContext
+> => {
+  return useMutation(getAddWeeklyOrderItemMutationOptions(options));
+};
+
+/**
+ * @summary Update a weekly order item
+ */
+export const getUpdateWeeklyOrderItemUrl = (id: string, itemId: string) => {
+  return `/api/weekly-orders/${id}/items/${itemId}`;
+};
+
+export const updateWeeklyOrderItem = async (
+  id: string,
+  itemId: string,
+  updateWeeklyOrderItemBody: UpdateWeeklyOrderItemBody,
+  options?: RequestInit,
+): Promise<WeeklyOrderItem> => {
+  return customFetch<WeeklyOrderItem>(getUpdateWeeklyOrderItemUrl(id, itemId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateWeeklyOrderItemBody),
+  });
+};
+
+export const getUpdateWeeklyOrderItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWeeklyOrderItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateWeeklyOrderItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+  TContext
+> => {
+  const mutationKey = ["updateWeeklyOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateWeeklyOrderItem>>,
+    { id: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> }
+  > = (props) => {
+    const { id, itemId, data } = props ?? {};
+
+    return updateWeeklyOrderItem(id, itemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateWeeklyOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateWeeklyOrderItem>>
+>;
+export type UpdateWeeklyOrderItemMutationBody =
+  BodyType<UpdateWeeklyOrderItemBody>;
+export type UpdateWeeklyOrderItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update a weekly order item
+ */
+export const useUpdateWeeklyOrderItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateWeeklyOrderItem>>,
+    TError,
+    { id: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateWeeklyOrderItem>>,
+  TError,
+  { id: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+  TContext
+> => {
+  return useMutation(getUpdateWeeklyOrderItemMutationOptions(options));
+};
+
+/**
+ * @summary Remove an item from a weekly order
+ */
+export const getRemoveWeeklyOrderItemUrl = (id: string, itemId: string) => {
+  return `/api/weekly-orders/${id}/items/${itemId}`;
+};
+
+export const removeWeeklyOrderItem = async (
+  id: string,
+  itemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemoveWeeklyOrderItemUrl(id, itemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemoveWeeklyOrderItemMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeWeeklyOrderItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removeWeeklyOrderItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  const mutationKey = ["removeWeeklyOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removeWeeklyOrderItem>>,
+    { id: string; itemId: string }
+  > = (props) => {
+    const { id, itemId } = props ?? {};
+
+    return removeWeeklyOrderItem(id, itemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemoveWeeklyOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removeWeeklyOrderItem>>
+>;
+
+export type RemoveWeeklyOrderItemMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Remove an item from a weekly order
+ */
+export const useRemoveWeeklyOrderItem = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removeWeeklyOrderItem>>,
+    TError,
+    { id: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removeWeeklyOrderItem>>,
+  TError,
+  { id: string; itemId: string },
+  TContext
+> => {
+  return useMutation(getRemoveWeeklyOrderItemMutationOptions(options));
+};
+
+/**
  * @summary Public — fetch a school's read-only profile by access token
  */
 export const getGetSchoolByTokenUrl = (token: string) => {
@@ -1553,3 +3822,540 @@ export function useGetSchoolByToken<
 
   return { ...query, queryKey: queryOptions.queryKey };
 }
+
+/**
+ * @summary Public — fetch this week's order for the school (creates from defaults when window is open)
+ */
+export const getGetSchoolPortalOrderUrl = (token: string) => {
+  return `/api/school-portal/${token}/order`;
+};
+
+export const getSchoolPortalOrder = async (
+  token: string,
+  options?: RequestInit,
+): Promise<CoordinatorOrderView> => {
+  return customFetch<CoordinatorOrderView>(getGetSchoolPortalOrderUrl(token), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetSchoolPortalOrderQueryKey = (token: string) => {
+  return [`/api/school-portal/${token}/order`] as const;
+};
+
+export const getGetSchoolPortalOrderQueryOptions = <
+  TData = Awaited<ReturnType<typeof getSchoolPortalOrder>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  token: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSchoolPortalOrder>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getGetSchoolPortalOrderQueryKey(token);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getSchoolPortalOrder>>
+  > = ({ signal }) =>
+    getSchoolPortalOrder(token, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!token,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getSchoolPortalOrder>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetSchoolPortalOrderQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getSchoolPortalOrder>>
+>;
+export type GetSchoolPortalOrderQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Public — fetch this week's order for the school (creates from defaults when window is open)
+ */
+
+export function useGetSchoolPortalOrder<
+  TData = Awaited<ReturnType<typeof getSchoolPortalOrder>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  token: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getSchoolPortalOrder>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetSchoolPortalOrderQueryOptions(token, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Add or update an item on this week's order (window must be open)
+ */
+export const getAddPortalOrderItemUrl = (token: string) => {
+  return `/api/school-portal/${token}/order/items`;
+};
+
+export const addPortalOrderItem = async (
+  token: string,
+  upsertWeeklyOrderItemBody: UpsertWeeklyOrderItemBody,
+  options?: RequestInit,
+): Promise<WeeklyOrderItem> => {
+  return customFetch<WeeklyOrderItem>(getAddPortalOrderItemUrl(token), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(upsertWeeklyOrderItemBody),
+  });
+};
+
+export const getAddPortalOrderItemMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addPortalOrderItem>>,
+    TError,
+    { token: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof addPortalOrderItem>>,
+  TError,
+  { token: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+  TContext
+> => {
+  const mutationKey = ["addPortalOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof addPortalOrderItem>>,
+    { token: string; data: BodyType<UpsertWeeklyOrderItemBody> }
+  > = (props) => {
+    const { token, data } = props ?? {};
+
+    return addPortalOrderItem(token, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type AddPortalOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof addPortalOrderItem>>
+>;
+export type AddPortalOrderItemMutationBody =
+  BodyType<UpsertWeeklyOrderItemBody>;
+export type AddPortalOrderItemMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Add or update an item on this week's order (window must be open)
+ */
+export const useAddPortalOrderItem = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof addPortalOrderItem>>,
+    TError,
+    { token: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof addPortalOrderItem>>,
+  TError,
+  { token: string; data: BodyType<UpsertWeeklyOrderItemBody> },
+  TContext
+> => {
+  return useMutation(getAddPortalOrderItemMutationOptions(options));
+};
+
+/**
+ * @summary Update an item on this week's order. Notes are always editable; quantity edits require an open window.
+ */
+export const getUpdatePortalOrderItemUrl = (token: string, itemId: string) => {
+  return `/api/school-portal/${token}/order/items/${itemId}`;
+};
+
+export const updatePortalOrderItem = async (
+  token: string,
+  itemId: string,
+  updateWeeklyOrderItemBody: UpdateWeeklyOrderItemBody,
+  options?: RequestInit,
+): Promise<WeeklyOrderItem> => {
+  return customFetch<WeeklyOrderItem>(
+    getUpdatePortalOrderItemUrl(token, itemId),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updateWeeklyOrderItemBody),
+    },
+  );
+};
+
+export const getUpdatePortalOrderItemMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePortalOrderItem>>,
+    TError,
+    {
+      token: string;
+      itemId: string;
+      data: BodyType<UpdateWeeklyOrderItemBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePortalOrderItem>>,
+  TError,
+  { token: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+  TContext
+> => {
+  const mutationKey = ["updatePortalOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePortalOrderItem>>,
+    { token: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> }
+  > = (props) => {
+    const { token, itemId, data } = props ?? {};
+
+    return updatePortalOrderItem(token, itemId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePortalOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePortalOrderItem>>
+>;
+export type UpdatePortalOrderItemMutationBody =
+  BodyType<UpdateWeeklyOrderItemBody>;
+export type UpdatePortalOrderItemMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update an item on this week's order. Notes are always editable; quantity edits require an open window.
+ */
+export const useUpdatePortalOrderItem = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePortalOrderItem>>,
+    TError,
+    {
+      token: string;
+      itemId: string;
+      data: BodyType<UpdateWeeklyOrderItemBody>;
+    },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePortalOrderItem>>,
+  TError,
+  { token: string; itemId: string; data: BodyType<UpdateWeeklyOrderItemBody> },
+  TContext
+> => {
+  return useMutation(getUpdatePortalOrderItemMutationOptions(options));
+};
+
+/**
+ * @summary Remove an item (window must be open)
+ */
+export const getRemovePortalOrderItemUrl = (token: string, itemId: string) => {
+  return `/api/school-portal/${token}/order/items/${itemId}`;
+};
+
+export const removePortalOrderItem = async (
+  token: string,
+  itemId: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getRemovePortalOrderItemUrl(token, itemId), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getRemovePortalOrderItemMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removePortalOrderItem>>,
+    TError,
+    { token: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof removePortalOrderItem>>,
+  TError,
+  { token: string; itemId: string },
+  TContext
+> => {
+  const mutationKey = ["removePortalOrderItem"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof removePortalOrderItem>>,
+    { token: string; itemId: string }
+  > = (props) => {
+    const { token, itemId } = props ?? {};
+
+    return removePortalOrderItem(token, itemId, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type RemovePortalOrderItemMutationResult = NonNullable<
+  Awaited<ReturnType<typeof removePortalOrderItem>>
+>;
+
+export type RemovePortalOrderItemMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Remove an item (window must be open)
+ */
+export const useRemovePortalOrderItem = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof removePortalOrderItem>>,
+    TError,
+    { token: string; itemId: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof removePortalOrderItem>>,
+  TError,
+  { token: string; itemId: string },
+  TContext
+> => {
+  return useMutation(getRemovePortalOrderItemMutationOptions(options));
+};
+
+/**
+ * @summary Update the order's notes (always allowed)
+ */
+export const getUpdatePortalOrderNotesUrl = (token: string) => {
+  return `/api/school-portal/${token}/order/notes`;
+};
+
+export const updatePortalOrderNotes = async (
+  token: string,
+  updatePortalOrderNotesBody: UpdatePortalOrderNotesBody,
+  options?: RequestInit,
+): Promise<CoordinatorOrderView> => {
+  return customFetch<CoordinatorOrderView>(
+    getUpdatePortalOrderNotesUrl(token),
+    {
+      ...options,
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", ...options?.headers },
+      body: JSON.stringify(updatePortalOrderNotesBody),
+    },
+  );
+};
+
+export const getUpdatePortalOrderNotesMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePortalOrderNotes>>,
+    TError,
+    { token: string; data: BodyType<UpdatePortalOrderNotesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updatePortalOrderNotes>>,
+  TError,
+  { token: string; data: BodyType<UpdatePortalOrderNotesBody> },
+  TContext
+> => {
+  const mutationKey = ["updatePortalOrderNotes"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updatePortalOrderNotes>>,
+    { token: string; data: BodyType<UpdatePortalOrderNotesBody> }
+  > = (props) => {
+    const { token, data } = props ?? {};
+
+    return updatePortalOrderNotes(token, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdatePortalOrderNotesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updatePortalOrderNotes>>
+>;
+export type UpdatePortalOrderNotesMutationBody =
+  BodyType<UpdatePortalOrderNotesBody>;
+export type UpdatePortalOrderNotesMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Update the order's notes (always allowed)
+ */
+export const useUpdatePortalOrderNotes = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updatePortalOrderNotes>>,
+    TError,
+    { token: string; data: BodyType<UpdatePortalOrderNotesBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updatePortalOrderNotes>>,
+  TError,
+  { token: string; data: BodyType<UpdatePortalOrderNotesBody> },
+  TContext
+> => {
+  return useMutation(getUpdatePortalOrderNotesMutationOptions(options));
+};
+
+/**
+ * @summary Coordinator confirms this week's order (window must be open)
+ */
+export const getConfirmPortalOrderUrl = (token: string) => {
+  return `/api/school-portal/${token}/order/confirm`;
+};
+
+export const confirmPortalOrder = async (
+  token: string,
+  options?: RequestInit,
+): Promise<CoordinatorOrderView> => {
+  return customFetch<CoordinatorOrderView>(getConfirmPortalOrderUrl(token), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getConfirmPortalOrderMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmPortalOrder>>,
+    TError,
+    { token: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof confirmPortalOrder>>,
+  TError,
+  { token: string },
+  TContext
+> => {
+  const mutationKey = ["confirmPortalOrder"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof confirmPortalOrder>>,
+    { token: string }
+  > = (props) => {
+    const { token } = props ?? {};
+
+    return confirmPortalOrder(token, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type ConfirmPortalOrderMutationResult = NonNullable<
+  Awaited<ReturnType<typeof confirmPortalOrder>>
+>;
+
+export type ConfirmPortalOrderMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Coordinator confirms this week's order (window must be open)
+ */
+export const useConfirmPortalOrder = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof confirmPortalOrder>>,
+    TError,
+    { token: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof confirmPortalOrder>>,
+  TError,
+  { token: string },
+  TContext
+> => {
+  return useMutation(getConfirmPortalOrderMutationOptions(options));
+};

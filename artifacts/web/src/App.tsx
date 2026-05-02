@@ -13,6 +13,11 @@ import DashboardPage from "@/pages/dashboard";
 import SchoolsPage from "@/pages/schools";
 import StaffPage from "@/pages/staff";
 import SchoolPortalPage from "@/pages/school-portal";
+import ProductsPage from "@/pages/products";
+import MenuTemplatesPage from "@/pages/menu-templates";
+import SchoolDefaultsPage from "@/pages/school-defaults";
+import WeeklyOrdersPage from "@/pages/weekly-orders";
+import SettingsPage from "@/pages/settings";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -44,14 +49,35 @@ function PrivateRoutes() {
     <AppShell>
       <Switch>
         <Route path="/" component={DashboardPage} />
+        <Route path="/orders" component={WeeklyOrdersPage} />
         <Route path="/schools">
           <AdminOnly>
             <SchoolsPage />
           </AdminOnly>
         </Route>
+        <Route path="/school-defaults">
+          <AdminOnly>
+            <SchoolDefaultsPage />
+          </AdminOnly>
+        </Route>
+        <Route path="/products">
+          <AdminOnly>
+            <ProductsPage />
+          </AdminOnly>
+        </Route>
+        <Route path="/menu-templates">
+          <AdminOnly>
+            <MenuTemplatesPage />
+          </AdminOnly>
+        </Route>
         <Route path="/staff">
           <AdminOnly>
             <StaffPage />
+          </AdminOnly>
+        </Route>
+        <Route path="/settings">
+          <AdminOnly>
+            <SettingsPage />
           </AdminOnly>
         </Route>
         <Route component={NotFound} />

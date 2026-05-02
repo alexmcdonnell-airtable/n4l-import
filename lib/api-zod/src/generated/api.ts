@@ -268,6 +268,185 @@ export const ResetSchoolTokenResponse = zod
   );
 
 /**
+ * @summary List the school's default menu items
+ */
+export const GetSchoolDefaultMenuParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetSchoolDefaultMenuHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const getSchoolDefaultMenuResponseQuantityMin = 0;
+
+export const GetSchoolDefaultMenuResponseItem = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(getSchoolDefaultMenuResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+export const GetSchoolDefaultMenuResponse = zod.array(
+  GetSchoolDefaultMenuResponseItem,
+);
+
+/**
+ * @summary Add a single product to the school's default menu
+ */
+export const AddSchoolDefaultMenuItemParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const AddSchoolDefaultMenuItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const addSchoolDefaultMenuItemBodyQuantityMin = 0;
+
+export const AddSchoolDefaultMenuItemBody = zod.object({
+  productId: zod.string().min(1),
+  quantity: zod.number().min(addSchoolDefaultMenuItemBodyQuantityMin),
+});
+
+export const addSchoolDefaultMenuItemResponseQuantityMin = 0;
+
+export const AddSchoolDefaultMenuItemResponse = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(addSchoolDefaultMenuItemResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Replace the school's default menu by stamping a template
+ */
+export const StampTemplateOntoSchoolParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const StampTemplateOntoSchoolHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const StampTemplateOntoSchoolBody = zod.object({
+  templateId: zod.string().min(1),
+});
+
+export const stampTemplateOntoSchoolResponseQuantityMin = 0;
+
+export const StampTemplateOntoSchoolResponseItem = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(stampTemplateOntoSchoolResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+export const StampTemplateOntoSchoolResponse = zod.array(
+  StampTemplateOntoSchoolResponseItem,
+);
+
+/**
+ * @summary Update a default menu item's quantity
+ */
+export const UpdateSchoolDefaultMenuItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const UpdateSchoolDefaultMenuItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateSchoolDefaultMenuItemBodyQuantityMin = 0;
+
+export const UpdateSchoolDefaultMenuItemBody = zod.object({
+  quantity: zod.number().min(updateSchoolDefaultMenuItemBodyQuantityMin),
+});
+
+export const updateSchoolDefaultMenuItemResponseQuantityMin = 0;
+
+export const UpdateSchoolDefaultMenuItemResponse = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(updateSchoolDefaultMenuItemResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Remove an item from the school's default menu
+ */
+export const RemoveSchoolDefaultMenuItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const RemoveSchoolDefaultMenuItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
  * @summary List all staff users (including invited-only allowlist entries)
  */
 export const ListStaffHeader = zod.object({
@@ -353,6 +532,689 @@ export const RemoveStaffHeader = zod.object({
 });
 
 /**
+ * @summary List all products (staff-readable)
+ */
+export const ListProductsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const ListProductsResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullable(),
+  category: zod.string().nullable(),
+  unit: zod.string().nullable(),
+  sku: zod.string().nullable(),
+  allergens: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListProductsResponse = zod.array(ListProductsResponseItem);
+
+/**
+ * @summary Create a new product (admin only)
+ */
+export const CreateProductHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const CreateProductBody = zod.object({
+  name: zod.string().min(1),
+  description: zod.string().nullish(),
+  category: zod.string().nullish(),
+  unit: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  allergens: zod.string().nullish(),
+  active: zod.boolean().optional(),
+});
+
+/**
+ * @summary Update a product (admin only)
+ */
+export const UpdateProductParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateProductHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateProductBody = zod.object({
+  name: zod.string().min(1).optional(),
+  description: zod.string().nullish(),
+  category: zod.string().nullish(),
+  unit: zod.string().nullish(),
+  sku: zod.string().nullish(),
+  allergens: zod.string().nullish(),
+  active: zod.boolean().optional(),
+});
+
+export const UpdateProductResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullable(),
+  category: zod.string().nullable(),
+  unit: zod.string().nullable(),
+  sku: zod.string().nullable(),
+  allergens: zod.string().nullable(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a product (admin only). Fails if the product is in use.
+ */
+export const DeleteProductParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteProductHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary List all menu templates with their items
+ */
+export const ListMenuTemplatesHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const listMenuTemplatesResponseItemsItemQuantityMin = 0;
+
+export const ListMenuTemplatesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      templateId: zod.string(),
+      productId: zod.string(),
+      quantity: zod.number().min(listMenuTemplatesResponseItemsItemQuantityMin),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListMenuTemplatesResponse = zod.array(
+  ListMenuTemplatesResponseItem,
+);
+
+/**
+ * @summary Create a new menu template (admin only)
+ */
+export const CreateMenuTemplateHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const CreateMenuTemplateBody = zod.object({
+  name: zod.string().min(1),
+  description: zod.string().nullish(),
+});
+
+/**
+ * @summary Get a menu template with its items
+ */
+export const GetMenuTemplateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetMenuTemplateHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const getMenuTemplateResponseItemsItemQuantityMin = 0;
+
+export const GetMenuTemplateResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      templateId: zod.string(),
+      productId: zod.string(),
+      quantity: zod.number().min(getMenuTemplateResponseItemsItemQuantityMin),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a menu template's name/description (admin only)
+ */
+export const UpdateMenuTemplateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateMenuTemplateHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateMenuTemplateBody = zod.object({
+  name: zod.string().min(1).optional(),
+  description: zod.string().nullish(),
+});
+
+export const updateMenuTemplateResponseItemsItemQuantityMin = 0;
+
+export const UpdateMenuTemplateResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  description: zod.string().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      templateId: zod.string(),
+      productId: zod.string(),
+      quantity: zod
+        .number()
+        .min(updateMenuTemplateResponseItemsItemQuantityMin),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a menu template (admin only)
+ */
+export const DeleteMenuTemplateParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteMenuTemplateHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Add or update an item on the template
+ */
+export const AddMenuTemplateItemParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const AddMenuTemplateItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const addMenuTemplateItemBodyQuantityMin = 0;
+
+export const AddMenuTemplateItemBody = zod.object({
+  productId: zod.string().min(1),
+  quantity: zod.number().min(addMenuTemplateItemBodyQuantityMin),
+});
+
+export const addMenuTemplateItemResponseQuantityMin = 0;
+
+export const AddMenuTemplateItemResponse = zod.object({
+  id: zod.string(),
+  templateId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(addMenuTemplateItemResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Update an item's quantity
+ */
+export const UpdateMenuTemplateItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const UpdateMenuTemplateItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateMenuTemplateItemBodyQuantityMin = 0;
+
+export const UpdateMenuTemplateItemBody = zod.object({
+  quantity: zod.number().min(updateMenuTemplateItemBodyQuantityMin),
+});
+
+export const updateMenuTemplateItemResponseQuantityMin = 0;
+
+export const UpdateMenuTemplateItemResponse = zod.object({
+  id: zod.string(),
+  templateId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(updateMenuTemplateItemResponseQuantityMin),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Remove an item from a template
+ */
+export const RemoveMenuTemplateItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const RemoveMenuTemplateItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Get global application settings
+ */
+export const GetAppSettingsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetAppSettingsResponse = zod.object({
+  orderWindowOpen: zod.boolean(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update global application settings (admin only)
+ */
+export const UpdateAppSettingsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateAppSettingsBody = zod.object({
+  orderWindowOpen: zod.boolean().optional(),
+});
+
+export const UpdateAppSettingsResponse = zod.object({
+  orderWindowOpen: zod.boolean(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List every school's order for a given week
+ */
+export const ListWeeklyOrdersQueryParams = zod.object({
+  weekStart: zod.coerce
+    .string()
+    .describe("Monday date of the target week (YYYY-MM-DD)."),
+});
+
+export const ListWeeklyOrdersHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const listWeeklyOrdersResponseItemCountMin = 0;
+
+export const ListWeeklyOrdersResponseItem = zod.object({
+  orderId: zod.string().nullish(),
+  schoolId: zod.string(),
+  schoolName: zod.string(),
+  weekStart: zod.string(),
+  status: zod.enum(["not_started", "in_progress", "confirmed"]),
+  itemCount: zod.number().min(listWeeklyOrdersResponseItemCountMin),
+  notesPreview: zod.string().nullable(),
+  confirmedAt: zod.coerce.date().nullish(),
+});
+export const ListWeeklyOrdersResponse = zod.array(ListWeeklyOrdersResponseItem);
+
+/**
+ * @summary Get an existing weekly order with items
+ */
+export const GetWeeklyOrderParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetWeeklyOrderHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const getWeeklyOrderResponseItemsItemQuantityMin = 0;
+
+export const GetWeeklyOrderResponse = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  schoolName: zod.string(),
+  weekStart: zod.string(),
+  status: zod.enum(["not_started", "in_progress", "confirmed"]),
+  notes: zod.string().nullable(),
+  confirmedAt: zod.coerce.date().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      orderId: zod.string(),
+      productId: zod.string(),
+      quantity: zod.number().min(getWeeklyOrderResponseItemsItemQuantityMin),
+      note: zod.string().nullable(),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Update a weekly order's status or notes (admin only)
+ */
+export const UpdateWeeklyOrderParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateWeeklyOrderHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateWeeklyOrderBody = zod.object({
+  notes: zod.string().nullish(),
+  status: zod.enum(["not_started", "in_progress", "confirmed"]).optional(),
+});
+
+export const updateWeeklyOrderResponseItemsItemQuantityMin = 0;
+
+export const UpdateWeeklyOrderResponse = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  schoolName: zod.string(),
+  weekStart: zod.string(),
+  status: zod.enum(["not_started", "in_progress", "confirmed"]),
+  notes: zod.string().nullable(),
+  confirmedAt: zod.coerce.date().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      orderId: zod.string(),
+      productId: zod.string(),
+      quantity: zod.number().min(updateWeeklyOrderResponseItemsItemQuantityMin),
+      note: zod.string().nullable(),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Open or create the weekly order row for a school for a given week
+ */
+export const OpenOrCreateWeeklyOrderHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const OpenOrCreateWeeklyOrderBody = zod.object({
+  schoolId: zod.string().min(1),
+  weekStart: zod.string().min(1),
+});
+
+export const openOrCreateWeeklyOrderResponseItemsItemQuantityMin = 0;
+
+export const OpenOrCreateWeeklyOrderResponse = zod.object({
+  id: zod.string(),
+  schoolId: zod.string(),
+  schoolName: zod.string(),
+  weekStart: zod.string(),
+  status: zod.enum(["not_started", "in_progress", "confirmed"]),
+  notes: zod.string().nullable(),
+  confirmedAt: zod.coerce.date().nullable(),
+  items: zod.array(
+    zod.object({
+      id: zod.string(),
+      orderId: zod.string(),
+      productId: zod.string(),
+      quantity: zod
+        .number()
+        .min(openOrCreateWeeklyOrderResponseItemsItemQuantityMin),
+      note: zod.string().nullable(),
+      product: zod.object({
+        id: zod.string(),
+        name: zod.string(),
+        description: zod.string().nullable(),
+        category: zod.string().nullable(),
+        unit: zod.string().nullable(),
+        sku: zod.string().nullable(),
+        allergens: zod.string().nullable(),
+        active: zod.boolean(),
+        createdAt: zod.coerce.date(),
+        updatedAt: zod.coerce.date(),
+      }),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Add or update an item on a weekly order
+ */
+export const AddWeeklyOrderItemParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const AddWeeklyOrderItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const addWeeklyOrderItemBodyQuantityMin = 0;
+
+export const AddWeeklyOrderItemBody = zod.object({
+  productId: zod.string().min(1),
+  quantity: zod.number().min(addWeeklyOrderItemBodyQuantityMin),
+  note: zod.string().nullish(),
+});
+
+export const addWeeklyOrderItemResponseQuantityMin = 0;
+
+export const AddWeeklyOrderItemResponse = zod.object({
+  id: zod.string(),
+  orderId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(addWeeklyOrderItemResponseQuantityMin),
+  note: zod.string().nullable(),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Update a weekly order item
+ */
+export const UpdateWeeklyOrderItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const UpdateWeeklyOrderItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateWeeklyOrderItemBodyQuantityMin = 0;
+
+export const UpdateWeeklyOrderItemBody = zod.object({
+  quantity: zod.number().min(updateWeeklyOrderItemBodyQuantityMin).optional(),
+  note: zod.string().nullish(),
+});
+
+export const updateWeeklyOrderItemResponseQuantityMin = 0;
+
+export const UpdateWeeklyOrderItemResponse = zod.object({
+  id: zod.string(),
+  orderId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(updateWeeklyOrderItemResponseQuantityMin),
+  note: zod.string().nullable(),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Remove an item from a weekly order
+ */
+export const RemoveWeeklyOrderItemParams = zod.object({
+  id: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const RemoveWeeklyOrderItemHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
  * @summary Public — fetch a school's read-only profile by access token
  */
 export const GetSchoolByTokenParams = zod.object({
@@ -366,4 +1228,267 @@ export const GetSchoolByTokenResponse = zod.object({
   contactEmail: zod.string().email().nullable(),
   address: zod.string().nullable(),
   notes: zod.string().nullable(),
+});
+
+/**
+ * @summary Public — fetch this week's order for the school (creates from defaults when window is open)
+ */
+export const GetSchoolPortalOrderParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const getSchoolPortalOrderResponseOrderOneItemsItemQuantityMin = 0;
+
+export const GetSchoolPortalOrderResponse = zod.object({
+  school: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    contactName: zod.string().nullable(),
+    contactEmail: zod.string().email().nullable(),
+    address: zod.string().nullable(),
+    notes: zod.string().nullable(),
+  }),
+  orderWindowOpen: zod.boolean(),
+  weekStart: zod.string(),
+  order: zod.union([
+    zod.object({
+      id: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      weekStart: zod.string(),
+      status: zod.enum(["not_started", "in_progress", "confirmed"]),
+      notes: zod.string().nullable(),
+      confirmedAt: zod.coerce.date().nullable(),
+      items: zod.array(
+        zod.object({
+          id: zod.string(),
+          orderId: zod.string(),
+          productId: zod.string(),
+          quantity: zod
+            .number()
+            .min(getSchoolPortalOrderResponseOrderOneItemsItemQuantityMin),
+          note: zod.string().nullable(),
+          product: zod.object({
+            id: zod.string(),
+            name: zod.string(),
+            description: zod.string().nullable(),
+            category: zod.string().nullable(),
+            unit: zod.string().nullable(),
+            sku: zod.string().nullable(),
+            allergens: zod.string().nullable(),
+            active: zod.boolean(),
+            createdAt: zod.coerce.date(),
+            updatedAt: zod.coerce.date(),
+          }),
+        }),
+      ),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
+});
+
+/**
+ * @summary Add or update an item on this week's order (window must be open)
+ */
+export const AddPortalOrderItemParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const addPortalOrderItemBodyQuantityMin = 0;
+
+export const AddPortalOrderItemBody = zod.object({
+  productId: zod.string().min(1),
+  quantity: zod.number().min(addPortalOrderItemBodyQuantityMin),
+  note: zod.string().nullish(),
+});
+
+export const addPortalOrderItemResponseQuantityMin = 0;
+
+export const AddPortalOrderItemResponse = zod.object({
+  id: zod.string(),
+  orderId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(addPortalOrderItemResponseQuantityMin),
+  note: zod.string().nullable(),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Update an item on this week's order. Notes are always editable; quantity edits require an open window.
+ */
+export const UpdatePortalOrderItemParams = zod.object({
+  token: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+export const updatePortalOrderItemBodyQuantityMin = 0;
+
+export const UpdatePortalOrderItemBody = zod.object({
+  quantity: zod.number().min(updatePortalOrderItemBodyQuantityMin).optional(),
+  note: zod.string().nullish(),
+});
+
+export const updatePortalOrderItemResponseQuantityMin = 0;
+
+export const UpdatePortalOrderItemResponse = zod.object({
+  id: zod.string(),
+  orderId: zod.string(),
+  productId: zod.string(),
+  quantity: zod.number().min(updatePortalOrderItemResponseQuantityMin),
+  note: zod.string().nullable(),
+  product: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    description: zod.string().nullable(),
+    category: zod.string().nullable(),
+    unit: zod.string().nullable(),
+    sku: zod.string().nullable(),
+    allergens: zod.string().nullable(),
+    active: zod.boolean(),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Remove an item (window must be open)
+ */
+export const RemovePortalOrderItemParams = zod.object({
+  token: zod.coerce.string(),
+  itemId: zod.coerce.string(),
+});
+
+/**
+ * @summary Update the order's notes (always allowed)
+ */
+export const UpdatePortalOrderNotesParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const UpdatePortalOrderNotesBody = zod.object({
+  notes: zod.string().nullable(),
+});
+
+export const updatePortalOrderNotesResponseOrderOneItemsItemQuantityMin = 0;
+
+export const UpdatePortalOrderNotesResponse = zod.object({
+  school: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    contactName: zod.string().nullable(),
+    contactEmail: zod.string().email().nullable(),
+    address: zod.string().nullable(),
+    notes: zod.string().nullable(),
+  }),
+  orderWindowOpen: zod.boolean(),
+  weekStart: zod.string(),
+  order: zod.union([
+    zod.object({
+      id: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      weekStart: zod.string(),
+      status: zod.enum(["not_started", "in_progress", "confirmed"]),
+      notes: zod.string().nullable(),
+      confirmedAt: zod.coerce.date().nullable(),
+      items: zod.array(
+        zod.object({
+          id: zod.string(),
+          orderId: zod.string(),
+          productId: zod.string(),
+          quantity: zod
+            .number()
+            .min(updatePortalOrderNotesResponseOrderOneItemsItemQuantityMin),
+          note: zod.string().nullable(),
+          product: zod.object({
+            id: zod.string(),
+            name: zod.string(),
+            description: zod.string().nullable(),
+            category: zod.string().nullable(),
+            unit: zod.string().nullable(),
+            sku: zod.string().nullable(),
+            allergens: zod.string().nullable(),
+            active: zod.boolean(),
+            createdAt: zod.coerce.date(),
+            updatedAt: zod.coerce.date(),
+          }),
+        }),
+      ),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
+});
+
+/**
+ * @summary Coordinator confirms this week's order (window must be open)
+ */
+export const ConfirmPortalOrderParams = zod.object({
+  token: zod.coerce.string(),
+});
+
+export const confirmPortalOrderResponseOrderOneItemsItemQuantityMin = 0;
+
+export const ConfirmPortalOrderResponse = zod.object({
+  school: zod.object({
+    id: zod.string(),
+    name: zod.string(),
+    contactName: zod.string().nullable(),
+    contactEmail: zod.string().email().nullable(),
+    address: zod.string().nullable(),
+    notes: zod.string().nullable(),
+  }),
+  orderWindowOpen: zod.boolean(),
+  weekStart: zod.string(),
+  order: zod.union([
+    zod.object({
+      id: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      weekStart: zod.string(),
+      status: zod.enum(["not_started", "in_progress", "confirmed"]),
+      notes: zod.string().nullable(),
+      confirmedAt: zod.coerce.date().nullable(),
+      items: zod.array(
+        zod.object({
+          id: zod.string(),
+          orderId: zod.string(),
+          productId: zod.string(),
+          quantity: zod
+            .number()
+            .min(confirmPortalOrderResponseOrderOneItemsItemQuantityMin),
+          note: zod.string().nullable(),
+          product: zod.object({
+            id: zod.string(),
+            name: zod.string(),
+            description: zod.string().nullable(),
+            category: zod.string().nullable(),
+            unit: zod.string().nullable(),
+            sku: zod.string().nullable(),
+            allergens: zod.string().nullable(),
+            active: zod.boolean(),
+            createdAt: zod.coerce.date(),
+            updatedAt: zod.coerce.date(),
+          }),
+        }),
+      ),
+      createdAt: zod.coerce.date(),
+      updatedAt: zod.coerce.date(),
+    }),
+    zod.null(),
+  ]),
 });
