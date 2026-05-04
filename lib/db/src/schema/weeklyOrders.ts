@@ -20,6 +20,7 @@ export const weeklyOrdersTable = pgTable(
       .notNull()
       .references(() => schoolsTable.id, { onDelete: "cascade" }),
     weekStart: date("week_start").notNull(),
+    routeWeekInstanceId: varchar("route_week_instance_id"),
     status: varchar("status").notNull().default("not_started"),
     notes: text("notes"),
     confirmedAt: timestamp("confirmed_at", { withTimezone: true }),

@@ -23,32 +23,48 @@ import type {
   CoordinatorOrderView,
   CreateMenuTemplateBody,
   CreateProductBody,
+  CreateRouteBody,
   CreateSchoolBody,
+  CreateTruckBody,
   ErrorEnvelope,
   HandleBrowserLoginCallbackParams,
   HealthStatus,
   InviteStaffBody,
+  ListRouteInstancesParams,
   ListWeeklyOrdersParams,
   LogoutSuccess,
+  Manifest,
+  MaterializeBody,
   MenuTemplate,
   MenuTemplateItem,
   MobileTokenExchangeRequest,
   MobileTokenExchangeSuccess,
+  MoveSchoolBody,
+  MoveSchoolToInstance200,
   OpenWeeklyOrderBody,
   Product,
+  Route,
+  RouteInstance,
   School,
   SchoolDefaultMenuItem,
   SchoolProfile,
   SchoolWithToken,
+  SetInstanceStopsBody,
+  SetRouteStopsBody,
   StaffMember,
   StampTemplateBody,
+  Truck,
   UpdateAppSettingsBody,
+  UpdateInstanceStopBody,
   UpdateMenuItemQuantityBody,
   UpdateMenuTemplateBody,
   UpdatePortalOrderNotesBody,
   UpdateProductBody,
+  UpdateRouteBody,
+  UpdateRouteInstanceBody,
   UpdateSchoolBody,
   UpdateStaffBody,
+  UpdateTruckBody,
   UpdateWeeklyOrderBody,
   UpdateWeeklyOrderItemBody,
   UpsertMenuItemBody,
@@ -3735,6 +3751,1289 @@ export const useRemoveWeeklyOrderItem = <
 > => {
   return useMutation(getRemoveWeeklyOrderItemMutationOptions(options));
 };
+
+/**
+ * @summary List all trucks
+ */
+export const getListTrucksUrl = () => {
+  return `/api/trucks`;
+};
+
+export const listTrucks = async (options?: RequestInit): Promise<Truck[]> => {
+  return customFetch<Truck[]>(getListTrucksUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListTrucksQueryKey = () => {
+  return [`/api/trucks`] as const;
+};
+
+export const getListTrucksQueryOptions = <
+  TData = Awaited<ReturnType<typeof listTrucks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTrucks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListTrucksQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listTrucks>>> = ({
+    signal,
+  }) => listTrucks({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listTrucks>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListTrucksQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listTrucks>>
+>;
+export type ListTrucksQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all trucks
+ */
+
+export function useListTrucks<
+  TData = Awaited<ReturnType<typeof listTrucks>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listTrucks>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListTrucksQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a truck
+ */
+export const getCreateTruckUrl = () => {
+  return `/api/trucks`;
+};
+
+export const createTruck = async (
+  createTruckBody: CreateTruckBody,
+  options?: RequestInit,
+): Promise<Truck> => {
+  return customFetch<Truck>(getCreateTruckUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createTruckBody),
+  });
+};
+
+export const getCreateTruckMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTruck>>,
+    TError,
+    { data: BodyType<CreateTruckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createTruck>>,
+  TError,
+  { data: BodyType<CreateTruckBody> },
+  TContext
+> => {
+  const mutationKey = ["createTruck"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createTruck>>,
+    { data: BodyType<CreateTruckBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createTruck(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateTruckMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createTruck>>
+>;
+export type CreateTruckMutationBody = BodyType<CreateTruckBody>;
+export type CreateTruckMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a truck
+ */
+export const useCreateTruck = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createTruck>>,
+    TError,
+    { data: BodyType<CreateTruckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createTruck>>,
+  TError,
+  { data: BodyType<CreateTruckBody> },
+  TContext
+> => {
+  return useMutation(getCreateTruckMutationOptions(options));
+};
+
+/**
+ * @summary Update a truck
+ */
+export const getUpdateTruckUrl = (id: string) => {
+  return `/api/trucks/${id}`;
+};
+
+export const updateTruck = async (
+  id: string,
+  updateTruckBody: UpdateTruckBody,
+  options?: RequestInit,
+): Promise<Truck> => {
+  return customFetch<Truck>(getUpdateTruckUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateTruckBody),
+  });
+};
+
+export const getUpdateTruckMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTruck>>,
+    TError,
+    { id: string; data: BodyType<UpdateTruckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateTruck>>,
+  TError,
+  { id: string; data: BodyType<UpdateTruckBody> },
+  TContext
+> => {
+  const mutationKey = ["updateTruck"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateTruck>>,
+    { id: string; data: BodyType<UpdateTruckBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateTruck(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateTruckMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateTruck>>
+>;
+export type UpdateTruckMutationBody = BodyType<UpdateTruckBody>;
+export type UpdateTruckMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update a truck
+ */
+export const useUpdateTruck = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateTruck>>,
+    TError,
+    { id: string; data: BodyType<UpdateTruckBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateTruck>>,
+  TError,
+  { id: string; data: BodyType<UpdateTruckBody> },
+  TContext
+> => {
+  return useMutation(getUpdateTruckMutationOptions(options));
+};
+
+/**
+ * @summary List all routes with their default stops
+ */
+export const getListRoutesUrl = () => {
+  return `/api/routes`;
+};
+
+export const listRoutes = async (options?: RequestInit): Promise<Route[]> => {
+  return customFetch<Route[]>(getListRoutesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListRoutesQueryKey = () => {
+  return [`/api/routes`] as const;
+};
+
+export const getListRoutesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listRoutes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRoutes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListRoutesQueryKey();
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof listRoutes>>> = ({
+    signal,
+  }) => listRoutes({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listRoutes>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListRoutesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listRoutes>>
+>;
+export type ListRoutesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List all routes with their default stops
+ */
+
+export function useListRoutes<
+  TData = Awaited<ReturnType<typeof listRoutes>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listRoutes>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListRoutesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Create a route
+ */
+export const getCreateRouteUrl = () => {
+  return `/api/routes`;
+};
+
+export const createRoute = async (
+  createRouteBody: CreateRouteBody,
+  options?: RequestInit,
+): Promise<Route> => {
+  return customFetch<Route>(getCreateRouteUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(createRouteBody),
+  });
+};
+
+export const getCreateRouteMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRoute>>,
+    TError,
+    { data: BodyType<CreateRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof createRoute>>,
+  TError,
+  { data: BodyType<CreateRouteBody> },
+  TContext
+> => {
+  const mutationKey = ["createRoute"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof createRoute>>,
+    { data: BodyType<CreateRouteBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return createRoute(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type CreateRouteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof createRoute>>
+>;
+export type CreateRouteMutationBody = BodyType<CreateRouteBody>;
+export type CreateRouteMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Create a route
+ */
+export const useCreateRoute = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof createRoute>>,
+    TError,
+    { data: BodyType<CreateRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof createRoute>>,
+  TError,
+  { data: BodyType<CreateRouteBody> },
+  TContext
+> => {
+  return useMutation(getCreateRouteMutationOptions(options));
+};
+
+/**
+ * @summary Update a route
+ */
+export const getUpdateRouteUrl = (id: string) => {
+  return `/api/routes/${id}`;
+};
+
+export const updateRoute = async (
+  id: string,
+  updateRouteBody: UpdateRouteBody,
+  options?: RequestInit,
+): Promise<Route> => {
+  return customFetch<Route>(getUpdateRouteUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateRouteBody),
+  });
+};
+
+export const getUpdateRouteMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRoute>>,
+    TError,
+    { id: string; data: BodyType<UpdateRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRoute>>,
+  TError,
+  { id: string; data: BodyType<UpdateRouteBody> },
+  TContext
+> => {
+  const mutationKey = ["updateRoute"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRoute>>,
+    { id: string; data: BodyType<UpdateRouteBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateRoute(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRouteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRoute>>
+>;
+export type UpdateRouteMutationBody = BodyType<UpdateRouteBody>;
+export type UpdateRouteMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Update a route
+ */
+export const useUpdateRoute = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRoute>>,
+    TError,
+    { id: string; data: BodyType<UpdateRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRoute>>,
+  TError,
+  { id: string; data: BodyType<UpdateRouteBody> },
+  TContext
+> => {
+  return useMutation(getUpdateRouteMutationOptions(options));
+};
+
+/**
+ * @summary Delete a route
+ */
+export const getDeleteRouteUrl = (id: string) => {
+  return `/api/routes/${id}`;
+};
+
+export const deleteRoute = async (
+  id: string,
+  options?: RequestInit,
+): Promise<void> => {
+  return customFetch<void>(getDeleteRouteUrl(id), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getDeleteRouteMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteRoute>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof deleteRoute>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  const mutationKey = ["deleteRoute"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof deleteRoute>>,
+    { id: string }
+  > = (props) => {
+    const { id } = props ?? {};
+
+    return deleteRoute(id, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type DeleteRouteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof deleteRoute>>
+>;
+
+export type DeleteRouteMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Delete a route
+ */
+export const useDeleteRoute = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof deleteRoute>>,
+    TError,
+    { id: string },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof deleteRoute>>,
+  TError,
+  { id: string },
+  TContext
+> => {
+  return useMutation(getDeleteRouteMutationOptions(options));
+};
+
+/**
+ * @summary Replace the ordered list of school stops for a route
+ */
+export const getSetRouteStopsUrl = (id: string) => {
+  return `/api/routes/${id}/stops`;
+};
+
+export const setRouteStops = async (
+  id: string,
+  setRouteStopsBody: SetRouteStopsBody,
+  options?: RequestInit,
+): Promise<Route> => {
+  return customFetch<Route>(getSetRouteStopsUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(setRouteStopsBody),
+  });
+};
+
+export const getSetRouteStopsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setRouteStops>>,
+    TError,
+    { id: string; data: BodyType<SetRouteStopsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setRouteStops>>,
+  TError,
+  { id: string; data: BodyType<SetRouteStopsBody> },
+  TContext
+> => {
+  const mutationKey = ["setRouteStops"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setRouteStops>>,
+    { id: string; data: BodyType<SetRouteStopsBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return setRouteStops(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetRouteStopsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setRouteStops>>
+>;
+export type SetRouteStopsMutationBody = BodyType<SetRouteStopsBody>;
+export type SetRouteStopsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Replace the ordered list of school stops for a route
+ */
+export const useSetRouteStops = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setRouteStops>>,
+    TError,
+    { id: string; data: BodyType<SetRouteStopsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setRouteStops>>,
+  TError,
+  { id: string; data: BodyType<SetRouteStopsBody> },
+  TContext
+> => {
+  return useMutation(getSetRouteStopsMutationOptions(options));
+};
+
+/**
+ * @summary List route instances for a given week
+ */
+export const getListRouteInstancesUrl = (params: ListRouteInstancesParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : value.toString());
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/route-instances?${stringifiedParams}`
+    : `/api/route-instances`;
+};
+
+export const listRouteInstances = async (
+  params: ListRouteInstancesParams,
+  options?: RequestInit,
+): Promise<RouteInstance[]> => {
+  return customFetch<RouteInstance[]>(getListRouteInstancesUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListRouteInstancesQueryKey = (
+  params?: ListRouteInstancesParams,
+) => {
+  return [`/api/route-instances`, ...(params ? [params] : [])] as const;
+};
+
+export const getListRouteInstancesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listRouteInstances>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListRouteInstancesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listRouteInstances>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey =
+    queryOptions?.queryKey ?? getListRouteInstancesQueryKey(params);
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listRouteInstances>>
+  > = ({ signal }) => listRouteInstances(params, { signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listRouteInstances>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListRouteInstancesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listRouteInstances>>
+>;
+export type ListRouteInstancesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary List route instances for a given week
+ */
+
+export function useListRouteInstances<
+  TData = Awaited<ReturnType<typeof listRouteInstances>>,
+  TError = ErrorType<unknown>,
+>(
+  params: ListRouteInstancesParams,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof listRouteInstances>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListRouteInstancesQueryOptions(params, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Materialize route instances for the current (or specified) week from the default schedule
+ */
+export const getMaterializeRouteInstancesUrl = () => {
+  return `/api/route-instances/materialize`;
+};
+
+export const materializeRouteInstances = async (
+  materializeBody?: MaterializeBody,
+  options?: RequestInit,
+): Promise<RouteInstance[]> => {
+  return customFetch<RouteInstance[]>(getMaterializeRouteInstancesUrl(), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(materializeBody),
+  });
+};
+
+export const getMaterializeRouteInstancesMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof materializeRouteInstances>>,
+    TError,
+    { data: BodyType<MaterializeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof materializeRouteInstances>>,
+  TError,
+  { data: BodyType<MaterializeBody> },
+  TContext
+> => {
+  const mutationKey = ["materializeRouteInstances"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof materializeRouteInstances>>,
+    { data: BodyType<MaterializeBody> }
+  > = (props) => {
+    const { data } = props ?? {};
+
+    return materializeRouteInstances(data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MaterializeRouteInstancesMutationResult = NonNullable<
+  Awaited<ReturnType<typeof materializeRouteInstances>>
+>;
+export type MaterializeRouteInstancesMutationBody = BodyType<MaterializeBody>;
+export type MaterializeRouteInstancesMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Materialize route instances for the current (or specified) week from the default schedule
+ */
+export const useMaterializeRouteInstances = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof materializeRouteInstances>>,
+    TError,
+    { data: BodyType<MaterializeBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof materializeRouteInstances>>,
+  TError,
+  { data: BodyType<MaterializeBody> },
+  TContext
+> => {
+  return useMutation(getMaterializeRouteInstancesMutationOptions(options));
+};
+
+/**
+ * @summary Override truck, day, or driver for this week's instance
+ */
+export const getUpdateRouteInstanceUrl = (id: string) => {
+  return `/api/route-instances/${id}`;
+};
+
+export const updateRouteInstance = async (
+  id: string,
+  updateRouteInstanceBody: UpdateRouteInstanceBody,
+  options?: RequestInit,
+): Promise<RouteInstance> => {
+  return customFetch<RouteInstance>(getUpdateRouteInstanceUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateRouteInstanceBody),
+  });
+};
+
+export const getUpdateRouteInstanceMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRouteInstance>>,
+    TError,
+    { id: string; data: BodyType<UpdateRouteInstanceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRouteInstance>>,
+  TError,
+  { id: string; data: BodyType<UpdateRouteInstanceBody> },
+  TContext
+> => {
+  const mutationKey = ["updateRouteInstance"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRouteInstance>>,
+    { id: string; data: BodyType<UpdateRouteInstanceBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateRouteInstance(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRouteInstanceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRouteInstance>>
+>;
+export type UpdateRouteInstanceMutationBody = BodyType<UpdateRouteInstanceBody>;
+export type UpdateRouteInstanceMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Override truck, day, or driver for this week's instance
+ */
+export const useUpdateRouteInstance = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRouteInstance>>,
+    TError,
+    { id: string; data: BodyType<UpdateRouteInstanceBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRouteInstance>>,
+  TError,
+  { id: string; data: BodyType<UpdateRouteInstanceBody> },
+  TContext
+> => {
+  return useMutation(getUpdateRouteInstanceMutationOptions(options));
+};
+
+/**
+ * @summary Replace the ordered list of school stops for a week instance
+ */
+export const getSetRouteInstanceStopsUrl = (id: string) => {
+  return `/api/route-instances/${id}/stops`;
+};
+
+export const setRouteInstanceStops = async (
+  id: string,
+  setInstanceStopsBody: SetInstanceStopsBody,
+  options?: RequestInit,
+): Promise<RouteInstance> => {
+  return customFetch<RouteInstance>(getSetRouteInstanceStopsUrl(id), {
+    ...options,
+    method: "PUT",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(setInstanceStopsBody),
+  });
+};
+
+export const getSetRouteInstanceStopsMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setRouteInstanceStops>>,
+    TError,
+    { id: string; data: BodyType<SetInstanceStopsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof setRouteInstanceStops>>,
+  TError,
+  { id: string; data: BodyType<SetInstanceStopsBody> },
+  TContext
+> => {
+  const mutationKey = ["setRouteInstanceStops"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof setRouteInstanceStops>>,
+    { id: string; data: BodyType<SetInstanceStopsBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return setRouteInstanceStops(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type SetRouteInstanceStopsMutationResult = NonNullable<
+  Awaited<ReturnType<typeof setRouteInstanceStops>>
+>;
+export type SetRouteInstanceStopsMutationBody = BodyType<SetInstanceStopsBody>;
+export type SetRouteInstanceStopsMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Replace the ordered list of school stops for a week instance
+ */
+export const useSetRouteInstanceStops = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof setRouteInstanceStops>>,
+    TError,
+    { id: string; data: BodyType<SetInstanceStopsBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof setRouteInstanceStops>>,
+  TError,
+  { id: string; data: BodyType<SetInstanceStopsBody> },
+  TContext
+> => {
+  return useMutation(getSetRouteInstanceStopsMutationOptions(options));
+};
+
+/**
+ * @summary Skip or unskip a stop in a week instance
+ */
+export const getUpdateRouteInstanceStopUrl = (id: string, stopId: string) => {
+  return `/api/route-instances/${id}/stops/${stopId}`;
+};
+
+export const updateRouteInstanceStop = async (
+  id: string,
+  stopId: string,
+  updateInstanceStopBody: UpdateInstanceStopBody,
+  options?: RequestInit,
+): Promise<RouteInstance> => {
+  return customFetch<RouteInstance>(getUpdateRouteInstanceStopUrl(id, stopId), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateInstanceStopBody),
+  });
+};
+
+export const getUpdateRouteInstanceStopMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRouteInstanceStop>>,
+    TError,
+    { id: string; stopId: string; data: BodyType<UpdateInstanceStopBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateRouteInstanceStop>>,
+  TError,
+  { id: string; stopId: string; data: BodyType<UpdateInstanceStopBody> },
+  TContext
+> => {
+  const mutationKey = ["updateRouteInstanceStop"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateRouteInstanceStop>>,
+    { id: string; stopId: string; data: BodyType<UpdateInstanceStopBody> }
+  > = (props) => {
+    const { id, stopId, data } = props ?? {};
+
+    return updateRouteInstanceStop(id, stopId, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateRouteInstanceStopMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateRouteInstanceStop>>
+>;
+export type UpdateRouteInstanceStopMutationBody =
+  BodyType<UpdateInstanceStopBody>;
+export type UpdateRouteInstanceStopMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Skip or unskip a stop in a week instance
+ */
+export const useUpdateRouteInstanceStop = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateRouteInstanceStop>>,
+    TError,
+    { id: string; stopId: string; data: BodyType<UpdateInstanceStopBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateRouteInstanceStop>>,
+  TError,
+  { id: string; stopId: string; data: BodyType<UpdateInstanceStopBody> },
+  TContext
+> => {
+  return useMutation(getUpdateRouteInstanceStopMutationOptions(options));
+};
+
+/**
+ * @summary Move a school from this instance to another route instance for the same week
+ */
+export const getMoveSchoolToInstanceUrl = (id: string) => {
+  return `/api/route-instances/${id}/move-school`;
+};
+
+export const moveSchoolToInstance = async (
+  id: string,
+  moveSchoolBody: MoveSchoolBody,
+  options?: RequestInit,
+): Promise<MoveSchoolToInstance200> => {
+  return customFetch<MoveSchoolToInstance200>(getMoveSchoolToInstanceUrl(id), {
+    ...options,
+    method: "POST",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(moveSchoolBody),
+  });
+};
+
+export const getMoveSchoolToInstanceMutationOptions = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof moveSchoolToInstance>>,
+    TError,
+    { id: string; data: BodyType<MoveSchoolBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof moveSchoolToInstance>>,
+  TError,
+  { id: string; data: BodyType<MoveSchoolBody> },
+  TContext
+> => {
+  const mutationKey = ["moveSchoolToInstance"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof moveSchoolToInstance>>,
+    { id: string; data: BodyType<MoveSchoolBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return moveSchoolToInstance(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type MoveSchoolToInstanceMutationResult = NonNullable<
+  Awaited<ReturnType<typeof moveSchoolToInstance>>
+>;
+export type MoveSchoolToInstanceMutationBody = BodyType<MoveSchoolBody>;
+export type MoveSchoolToInstanceMutationError = ErrorType<unknown>;
+
+/**
+ * @summary Move a school from this instance to another route instance for the same week
+ */
+export const useMoveSchoolToInstance = <
+  TError = ErrorType<unknown>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof moveSchoolToInstance>>,
+    TError,
+    { id: string; data: BodyType<MoveSchoolBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof moveSchoolToInstance>>,
+  TError,
+  { id: string; data: BodyType<MoveSchoolBody> },
+  TContext
+> => {
+  return useMutation(getMoveSchoolToInstanceMutationOptions(options));
+};
+
+/**
+ * @summary Get manifest data for a route instance (JSON)
+ */
+export const getGetManifestUrl = (id: string) => {
+  return `/api/route-instances/${id}/manifest`;
+};
+
+export const getManifest = async (
+  id: string,
+  options?: RequestInit,
+): Promise<Manifest> => {
+  return customFetch<Manifest>(getGetManifestUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetManifestQueryKey = (id: string) => {
+  return [`/api/route-instances/${id}/manifest`] as const;
+};
+
+export const getGetManifestQueryOptions = <
+  TData = Awaited<ReturnType<typeof getManifest>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getManifest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetManifestQueryKey(id);
+
+  const queryFn: QueryFunction<Awaited<ReturnType<typeof getManifest>>> = ({
+    signal,
+  }) => getManifest(id, { signal, ...requestOptions });
+
+  return {
+    queryKey,
+    queryFn,
+    enabled: !!id,
+    ...queryOptions,
+  } as UseQueryOptions<
+    Awaited<ReturnType<typeof getManifest>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetManifestQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getManifest>>
+>;
+export type GetManifestQueryError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Get manifest data for a route instance (JSON)
+ */
+
+export function useGetManifest<
+  TData = Awaited<ReturnType<typeof getManifest>>,
+  TError = ErrorType<ErrorEnvelope>,
+>(
+  id: string,
+  options?: {
+    query?: UseQueryOptions<
+      Awaited<ReturnType<typeof getManifest>>,
+      TError,
+      TData
+    >;
+    request?: SecondParameter<typeof customFetch>;
+  },
+): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetManifestQueryOptions(id, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary Public — fetch a school's read-only profile by access token

@@ -9,6 +9,9 @@ import menuTemplatesRouter from "./menuTemplates";
 import schoolDefaultMenuRouter from "./schoolDefaultMenu";
 import appSettingsRouter from "./appSettings";
 import weeklyOrdersRouter from "./weeklyOrders";
+import trucksRouter from "./trucks";
+import routesRouter from "./routesRouter";
+import manifestsRouter from "./manifests";
 
 const router: IRouter = Router();
 
@@ -22,5 +25,8 @@ router.use(productsRouter);
 router.use(menuTemplatesRouter);
 router.use(appSettingsRouter);
 router.use(weeklyOrdersRouter);
+router.use(trucksRouter);
+router.use(routesRouter);
+router.use(manifestsRouter);
 
 export default router;

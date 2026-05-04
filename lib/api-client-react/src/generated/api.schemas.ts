@@ -32,6 +32,7 @@ export const AuthUserEnvelopeRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;
 
 export interface AuthUserEnvelope {
@@ -81,6 +82,10 @@ export interface School {
   /** Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token). */
   accessUrl: string;
   tokenLastResetAt: string;
+  /** @nullable */
+  routeId?: string | null;
+  /** @nullable */
+  routeName?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -136,6 +141,7 @@ export const StaffMemberRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;
 
 export type StaffMemberStatus =
@@ -172,6 +178,7 @@ export const UpdateStaffBodyRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;
 
 export interface UpdateStaffBody {
@@ -186,6 +193,7 @@ export const InviteStaffBodyRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;
 
 export interface InviteStaffBody {
@@ -399,6 +407,16 @@ export interface WeeklyOrderSummary {
   notesPreview: string | null;
   /** @nullable */
   confirmedAt?: string | null;
+  /** @nullable */
+  routeWeekInstanceId?: string | null;
+  /** @nullable */
+  routeName?: string | null;
+  /** @nullable */
+  truckName?: string | null;
+  /** @nullable */
+  dayOfWeek?: number | null;
+  /** @nullable */
+  driverName?: string | null;
 }
 
 export type UpdateWeeklyOrderBodyStatus =
@@ -451,6 +469,197 @@ export interface CoordinatorOrderView {
   order: WeeklyOrder | null;
 }
 
+export interface Truck {
+  id: string;
+  name: string;
+  active: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateTruckBody {
+  /** @minLength 1 */
+  name: string;
+}
+
+export interface UpdateTruckBody {
+  /** @minLength 1 */
+  name?: string;
+  active?: boolean;
+}
+
+export interface RouteStop {
+  id: string;
+  routeId: string;
+  schoolId: string;
+  schoolName: string;
+  /** @minimum 0 */
+  stopOrder: number;
+}
+
+export interface Route {
+  id: string;
+  name: string;
+  truckId: string;
+  truckName: string;
+  /**
+   * @minimum 0
+   * @maximum 6
+   */
+  dayOfWeek: number;
+  /** @nullable */
+  defaultDriverId: string | null;
+  /** @nullable */
+  defaultDriverName: string | null;
+  active: boolean;
+  stops: RouteStop[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateRouteBody {
+  /** @minLength 1 */
+  name: string;
+  /** @minLength 1 */
+  truckId: string;
+  /**
+   * @minimum 0
+   * @maximum 6
+   */
+  dayOfWeek: number;
+  /** @nullable */
+  defaultDriverId?: string | null;
+}
+
+export interface UpdateRouteBody {
+  /** @minLength 1 */
+  name?: string;
+  /** @minLength 1 */
+  truckId?: string;
+  /**
+   * @minimum 0
+   * @maximum 6
+   */
+  dayOfWeek?: number;
+  /** @nullable */
+  defaultDriverId?: string | null;
+  active?: boolean;
+}
+
+export interface SetRouteStopsBody {
+  schoolIds: string[];
+}
+
+export interface InstanceStop {
+  id: string;
+  instanceId: string;
+  schoolId: string;
+  schoolName: string;
+  /** @minimum 0 */
+  stopOrder: number;
+  skipped: boolean;
+}
+
+export interface RouteInstance {
+  id: string;
+  routeId: string;
+  routeName: string;
+  weekStart: string;
+  truckId: string;
+  truckName: string;
+  /**
+   * @minimum 0
+   * @maximum 6
+   */
+  dayOfWeek: number;
+  /** @nullable */
+  driverId: string | null;
+  /** @nullable */
+  driverName: string | null;
+  active: boolean;
+  stops: InstanceStop[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface MaterializeBody {
+  weekStart?: string;
+}
+
+export interface UpdateRouteInstanceBody {
+  /** @nullable */
+  truckId?: string | null;
+  /**
+   * @minimum 0
+   * @maximum 6
+   * @nullable
+   */
+  dayOfWeek?: number | null;
+  /** @nullable */
+  driverId?: string | null;
+  active?: boolean;
+}
+
+export type SetInstanceStopsBodyStopsItem = {
+  schoolId: string;
+  /** @minimum 0 */
+  stopOrder: number;
+  skipped: boolean;
+};
+
+export interface SetInstanceStopsBody {
+  stops: SetInstanceStopsBodyStopsItem[];
+}
+
+export interface UpdateInstanceStopBody {
+  skipped?: boolean;
+  /** @minimum 0 */
+  stopOrder?: number;
+}
+
+export interface MoveSchoolBody {
+  /** @minLength 1 */
+  schoolId: string;
+  /** @minLength 1 */
+  targetInstanceId: string;
+}
+
+export type ManifestSchoolPageItemsItem = {
+  productId?: string;
+  productName: string;
+  quantity: number;
+  /** @nullable */
+  note?: string | null;
+};
+
+export interface ManifestSchoolPage {
+  schoolId?: string;
+  schoolName: string;
+  stopOrder: number;
+  skipped: boolean;
+  /** @nullable */
+  orderNotes: string | null;
+  items: ManifestSchoolPageItemsItem[];
+}
+
+export interface ManifestTotalLine {
+  productId?: string;
+  productName: string;
+  total: number;
+}
+
+export interface Manifest {
+  instanceId: string;
+  routeName: string;
+  truckName: string;
+  dayOfWeek: number;
+  /** @nullable */
+  driverName: string | null;
+  weekStart: string;
+  totals: ManifestTotalLine[];
+  schools: ManifestSchoolPage[];
+}
+
 /**
  * Opaque session token — `Bearer <sid>`.
  */
@@ -471,4 +680,13 @@ export type ListWeeklyOrdersParams = {
    * Monday date of the target week (YYYY-MM-DD).
    */
   weekStart: string;
+};
+
+export type ListRouteInstancesParams = {
+  weekStart: string;
+};
+
+export type MoveSchoolToInstance200 = {
+  fromInstance: RouteInstance;
+  toInstance: RouteInstance;
 };

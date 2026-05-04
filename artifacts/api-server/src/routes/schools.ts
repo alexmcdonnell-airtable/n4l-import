@@ -1,6 +1,7 @@
 import { Router, type IRouter, type Request, type Response } from "express";
-import { eq } from "drizzle-orm";
-import { db, schoolsTable } from "@workspace/db";
+import { eq, sql, and } from "drizzle-orm";
+import { db, schoolsTable, routesTable, weeklyOrdersTable } from "@workspace/db";
+import { currentWeekMonday, resolveRouteInstanceForSchool } from "../lib/orderHelpers";
 import {
   CreateSchoolBody,
   UpdateSchoolBody,
@@ -28,12 +29,21 @@ interface SchoolRow {
   accessToken: string;
   accessTokenHash: string;
   tokenLastResetAt: Date;
+  routeId: string | null;
   createdAt: Date;
   updatedAt: Date;
 }
 
-function serialize(req: Request, row: SchoolRow) {
+async function serializeWithRoute(req: Request, row: SchoolRow) {
   const accessUrl = buildAccessUrl(req, row.accessToken);
+  let routeName: string | null = null;
+  if (row.routeId) {
+    const [route] = await db
+      .select({ name: routesTable.name })
+      .from(routesTable)
+      .where(eq(routesTable.id, row.routeId));
+    routeName = route?.name ?? null;
+  }
   return {
     id: row.id,
     name: row.name,
@@ -43,6 +53,8 @@ function serialize(req: Request, row: SchoolRow) {
     notes: row.notes,
     accessUrl,
     tokenLastResetAt: row.tokenLastResetAt.toISOString(),
+    routeId: row.routeId,
+    routeName,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -56,7 +68,10 @@ router.get(
       .select()
       .from(schoolsTable)
       .orderBy(schoolsTable.name);
-    res.json(rows.map((r) => serialize(req, r)));
+    const serialized = await Promise.all(
+      rows.map((r) => serializeWithRoute(req, r)),
+    );
+    res.json(serialized);
   },
 );
 
@@ -82,9 +97,8 @@ router.post(
         accessTokenHash: hashAccessToken(token),
       })
       .returning();
-    res
-      .status(201)
-      .json({ ...serialize(req, row), accessToken: token });
+    const serialized = await serializeWithRoute(req, row);
+    res.status(201).json({ ...serialized, accessToken: token });
   },
 );
 
@@ -105,7 +119,7 @@ router.get(
       res.status(404).json({ error: "School not found" });
       return;
     }
-    res.json(serialize(req, row));
+    res.json(await serializeWithRoute(req, row));
   },
 );
 
@@ -144,7 +158,52 @@ router.patch(
       res.status(404).json({ error: "School not found" });
       return;
     }
-    res.json(serialize(req, row));
+    res.json(await serializeWithRoute(req, row));
+  },
+);
+
+router.patch(
+  "/schools/:id/route",
+  requireStaff(["admin", "staff", "warehouse"]),
+  async (req, res): Promise<void> => {
+    const id = Array.isArray(req.params.id)
+      ? req.params.id[0]
+      : req.params.id;
+    const { routeId } = req.body as { routeId?: string | null };
+
+    const [school] = await db
+      .select()
+      .from(schoolsTable)
+      .where(eq(schoolsTable.id, id));
+    if (!school) {
+      res.status(404).json({ error: "School not found" });
+      return;
+    }
+
+    const normalizedRouteId =
+      routeId === null || routeId === "" ? null : routeId ?? null;
+
+    const [row] = await db
+      .update(schoolsTable)
+      .set({ routeId: normalizedRouteId })
+      .where(eq(schoolsTable.id, id))
+      .returning();
+
+    // Rebind (or clear) current-week order's routeWeekInstanceId
+    const weekStart = currentWeekMonday();
+    const instanceId = await resolveRouteInstanceForSchool(id, weekStart);
+    // Always update: set instanceId when found, clear to null when not found (unrouted)
+    await db
+      .update(weeklyOrdersTable)
+      .set({ routeWeekInstanceId: instanceId })
+      .where(
+        and(
+          eq(weeklyOrdersTable.schoolId, id),
+          eq(weeklyOrdersTable.weekStart, weekStart),
+        ),
+      );
+
+    res.json(await serializeWithRoute(req, row));
   },
 );
 
@@ -192,7 +251,8 @@ router.post(
       res.status(404).json({ error: "School not found" });
       return;
     }
-    res.json({ ...serialize(req, row), accessToken: token });
+    const serialized = await serializeWithRoute(req, row);
+    res.json({ ...serialized, accessToken: token });
   },
 );
 

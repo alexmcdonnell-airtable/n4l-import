@@ -9,11 +9,19 @@ import {
   FileText,
   UtensilsCrossed,
   Settings,
+  Truck,
 } from "lucide-react";
 
-export type Role = "admin" | "staff" | "warehouse";
+export type Role = "admin" | "staff" | "warehouse" | "driver";
 
-export const ALL_ROLES: readonly Role[] = ["admin", "staff", "warehouse"];
+export const ALL_ROLES: readonly Role[] = [
+  "admin",
+  "staff",
+  "warehouse",
+  "driver",
+];
+
+export const PORTAL_ROLES: readonly Role[] = ["admin", "staff", "warehouse"];
 
 export type PageDef = {
   key: string;
@@ -81,6 +89,13 @@ export const PAGES: readonly PageDef[] = [
     roles: ["admin", "staff"],
   },
   {
+    key: "routes",
+    label: "Routes & Trucks",
+    path: "/routes",
+    icon: Truck,
+    roles: ["admin", "staff", "warehouse"],
+  },
+  {
     key: "settings",
     label: "Settings",
     path: "/settings",
@@ -91,7 +106,9 @@ export const PAGES: readonly PageDef[] = [
 
 export function pagesForRole(role: Role | null | undefined): PageDef[] {
   if (!role) return [];
-  return PAGES.filter((p) => p.roles.includes(role));
+  return PAGES.filter((p) =>
+    (p.roles as readonly string[]).includes(role),
+  );
 }
 
 export function canAccessPath(
@@ -101,7 +118,7 @@ export function canAccessPath(
   if (!role) return false;
   const page = PAGES.find((p) => p.path === path);
   if (!page) return false;
-  return page.roles.includes(role);
+  return (page.roles as readonly string[]).includes(role);
 }
 
 export function defaultPathForRole(role: Role | null | undefined): string {

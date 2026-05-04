@@ -7,6 +7,8 @@ import {
   productsTable,
   schoolsTable,
   appSettingsTable,
+  routeWeekInstancesTable,
+  routeWeekStopsTable,
   type Product,
 } from "@workspace/db";
 
@@ -192,15 +194,63 @@ export async function findOrderForSchoolWeek(
 }
 
 /**
+ * Resolve which route_week_instance a school belongs to for a given week.
+ * Returns the instance id or null.
+ */
+export async function resolveRouteInstanceForSchool(
+  schoolId: string,
+  weekStart: string,
+): Promise<string | null> {
+  // Find a route_week_stop that has this school in any instance for this week
+  const rows = await db
+    .select({
+      instanceId: routeWeekStopsTable.instanceId,
+      weekStart: routeWeekInstancesTable.weekStart,
+    })
+    .from(routeWeekStopsTable)
+    .innerJoin(
+      routeWeekInstancesTable,
+      eq(routeWeekInstancesTable.id, routeWeekStopsTable.instanceId),
+    )
+    .where(
+      and(
+        eq(routeWeekStopsTable.schoolId, schoolId),
+        eq(routeWeekInstancesTable.weekStart, weekStart),
+      ),
+    );
+  return rows[0]?.instanceId ?? null;
+}
+
+/**
  * Find or create the order row for (schoolId, weekStart). When creating,
- * copies the school's current default menu items into the new order.
+ * copies the school's current default menu items into the new order and
+ * binds the order to the matching route week instance (if one exists).
  */
 export async function findOrCreateOrderForSchoolWeek(
   schoolId: string,
   weekStart: string,
 ): Promise<SerializedWeeklyOrder> {
   const existing = await findOrderForSchoolWeek(schoolId, weekStart);
-  if (existing) return existing;
+  if (existing) {
+    // If the order exists but lacks a route binding, try to bind now
+    const [row] = await db
+      .select({ id: weeklyOrdersTable.id, routeWeekInstanceId: weeklyOrdersTable.routeWeekInstanceId })
+      .from(weeklyOrdersTable)
+      .where(eq(weeklyOrdersTable.id, existing.id));
+    if (row && !row.routeWeekInstanceId) {
+      const instanceId = await resolveRouteInstanceForSchool(schoolId, weekStart);
+      if (instanceId) {
+        await db
+          .update(weeklyOrdersTable)
+          .set({ routeWeekInstanceId: instanceId })
+          .where(eq(weeklyOrdersTable.id, row.id));
+      }
+    }
+    return existing;
+  }
+
+  // Resolve route instance binding before insert
+  const routeWeekInstanceId = await resolveRouteInstanceForSchool(schoolId, weekStart);
 
   // Try to insert; on conflict, just re-read.
   const [created] = await db
@@ -209,6 +259,7 @@ export async function findOrCreateOrderForSchoolWeek(
       schoolId,
       weekStart,
       status: "not_started",
+      routeWeekInstanceId,
     })
     .onConflictDoNothing()
     .returning();

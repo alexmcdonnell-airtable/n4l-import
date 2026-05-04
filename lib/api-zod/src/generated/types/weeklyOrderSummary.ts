@@ -20,4 +20,14 @@ export interface WeeklyOrderSummary {
   notesPreview: string | null;
   /** @nullable */
   confirmedAt?: Date | null;
+  /** @nullable */
+  routeWeekInstanceId?: string | null;
+  /** @nullable */
+  routeName?: string | null;
+  /** @nullable */
+  truckName?: string | null;
+  /** @nullable */
+  dayOfWeek?: number | null;
+  /** @nullable */
+  driverName?: string | null;
 }

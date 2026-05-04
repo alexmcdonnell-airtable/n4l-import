@@ -21,6 +21,7 @@ export const schoolsTable = pgTable(
     tokenLastResetAt: timestamp("token_last_reset_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    routeId: varchar("route_id"),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

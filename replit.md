@@ -15,6 +15,7 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - **Validation**: Zod (`zod/v4`), `drizzle-zod`
 - **API codegen**: Orval (from OpenAPI spec)
 - **Build**: esbuild (CJS bundle)
+- **PDF generation**: pdfkit (server-side, manifest PDFs)
 
 ## Key Commands
 
@@ -25,6 +26,29 @@ pnpm workspace monorepo using TypeScript. Each package manages its own dependenc
 - `pnpm --filter @workspace/api-server run dev` — run API server locally
 
 See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details.
+
+## Features
+
+### Schools & Staff
+- School roster management with private portal links (token-based access)
+- Staff roles: `admin`, `staff`, `warehouse`, `driver`
+- Per-school default menus and weekly order management
+
+### Delivery Logistics (Task #18)
+- **Trucks**: CRUD for delivery trucks (`/api/trucks`)
+- **Routes**: Default weekly delivery schedule — route name, truck, day of week, default driver, ordered school stops (`/api/routes`)
+- **Route instances**: Per-week materializations of the default schedule, with overrides for truck/driver/day and stop-level skip/unskip (`/api/route-instances`)
+- **Manifests**: JSON and PDF manifest generation per route instance (`/api/route-instances/:id/manifest`, `/api/route-instances/:id/manifest.pdf`)
+- **Orders**: `weekly_orders.route_week_instance_id` binds each order to a route instance; orders list shows route/truck columns and "Unrouted" badge
+- **Frontend**: "Routes & Trucks" page in sidebar (Default schedule tab + This week tab with PDF download)
+
+### DB Schema (new tables)
+- `trucks` — delivery trucks
+- `routes` — default route schedule (truck FK, day of week, driver FK, active flag)
+- `route_stops` — ordered school stops for each default route
+- `route_week_instances` — per-week materializations with override fields
+- `route_week_stops` — per-instance ordered school stops with skipped flag
+- `schools.route_id` — FK to routes for default assignment
 
 ## Security Notes
 

@@ -41,6 +41,7 @@ export const GetCurrentAuthUserResponse = zod.object({
       zod.literal("admin"),
       zod.literal("staff"),
       zod.literal("warehouse"),
+      zod.literal("driver"),
       zod.literal(null),
     ])
     .nullable(),
@@ -126,6 +127,8 @@ export const ListSchoolsResponseItem = zod.object({
       "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
+  routeId: zod.string().nullish(),
+  routeName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -176,6 +179,8 @@ export const GetSchoolResponse = zod.object({
       "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
+  routeId: zod.string().nullish(),
+  routeName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -215,6 +220,8 @@ export const UpdateSchoolResponse = zod.object({
       "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
     ),
   tokenLastResetAt: zod.coerce.date(),
+  routeId: zod.string().nullish(),
+  routeName: zod.string().nullish(),
   createdAt: zod.coerce.date(),
   updatedAt: zod.coerce.date(),
 });
@@ -261,6 +268,8 @@ export const ResetSchoolTokenResponse = zod
         "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
       ),
     tokenLastResetAt: zod.coerce.date(),
+    routeId: zod.string().nullish(),
+    routeName: zod.string().nullish(),
     createdAt: zod.coerce.date(),
     updatedAt: zod.coerce.date(),
   })
@@ -515,7 +524,7 @@ export const ListStaffResponseItem = zod.object({
   firstName: zod.string().nullable(),
   lastName: zod.string().nullable(),
   profileImageUrl: zod.string().nullable(),
-  role: zod.enum(["admin", "staff", "warehouse"]),
+  role: zod.enum(["admin", "staff", "warehouse", "driver"]),
   active: zod.boolean(),
   status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),
@@ -535,7 +544,7 @@ export const InviteStaffHeader = zod.object({
 
 export const InviteStaffBody = zod.object({
   email: zod.string().email().min(1),
-  role: zod.enum(["admin", "staff", "warehouse"]),
+  role: zod.enum(["admin", "staff", "warehouse", "driver"]),
 });
 
 /**
@@ -553,7 +562,7 @@ export const UpdateStaffHeader = zod.object({
 });
 
 export const UpdateStaffBody = zod.object({
-  role: zod.enum(["admin", "staff", "warehouse"]).optional(),
+  role: zod.enum(["admin", "staff", "warehouse", "driver"]).optional(),
   active: zod.boolean().optional(),
 });
 
@@ -563,7 +572,7 @@ export const UpdateStaffResponse = zod.object({
   firstName: zod.string().nullable(),
   lastName: zod.string().nullable(),
   profileImageUrl: zod.string().nullable(),
-  role: zod.enum(["admin", "staff", "warehouse"]),
+  role: zod.enum(["admin", "staff", "warehouse", "driver"]),
   active: zod.boolean(),
   status: zod.enum(["invited", "active", "inactive"]),
   lastLoginAt: zod.coerce.date().nullable(),
@@ -1102,6 +1111,11 @@ export const ListWeeklyOrdersResponseItem = zod.object({
   itemCount: zod.number().min(listWeeklyOrdersResponseItemCountMin),
   notesPreview: zod.string().nullable(),
   confirmedAt: zod.coerce.date().nullish(),
+  routeWeekInstanceId: zod.string().nullish(),
+  routeName: zod.string().nullish(),
+  truckName: zod.string().nullish(),
+  dayOfWeek: zod.number().nullish(),
+  driverName: zod.string().nullish(),
 });
 export const ListWeeklyOrdersResponse = zod.array(ListWeeklyOrdersResponseItem);
 
@@ -1421,6 +1435,678 @@ export const RemoveWeeklyOrderItemHeader = zod.object({
     .string()
     .optional()
     .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary List all trucks
+ */
+export const ListTrucksHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const ListTrucksResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListTrucksResponse = zod.array(ListTrucksResponseItem);
+
+/**
+ * @summary Create a truck
+ */
+export const CreateTruckHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const CreateTruckBody = zod.object({
+  name: zod.string().min(1),
+});
+
+/**
+ * @summary Update a truck
+ */
+export const UpdateTruckParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateTruckHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateTruckBody = zod.object({
+  name: zod.string().min(1).optional(),
+  active: zod.boolean().optional(),
+});
+
+export const UpdateTruckResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  active: zod.boolean(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List all routes with their default stops
+ */
+export const ListRoutesHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const listRoutesResponseDayOfWeekMin = 0;
+export const listRoutesResponseDayOfWeekMax = 6;
+
+export const listRoutesResponseStopsItemStopOrderMin = 0;
+
+export const ListRoutesResponseItem = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(listRoutesResponseDayOfWeekMin)
+    .max(listRoutesResponseDayOfWeekMax),
+  defaultDriverId: zod.string().nullable(),
+  defaultDriverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      routeId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod.number().min(listRoutesResponseStopsItemStopOrderMin),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListRoutesResponse = zod.array(ListRoutesResponseItem);
+
+/**
+ * @summary Create a route
+ */
+export const CreateRouteHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const createRouteBodyDayOfWeekMin = 0;
+export const createRouteBodyDayOfWeekMax = 6;
+
+export const CreateRouteBody = zod.object({
+  name: zod.string().min(1),
+  truckId: zod.string().min(1),
+  dayOfWeek: zod
+    .number()
+    .min(createRouteBodyDayOfWeekMin)
+    .max(createRouteBodyDayOfWeekMax),
+  defaultDriverId: zod.string().nullish(),
+});
+
+/**
+ * @summary Update a route
+ */
+export const UpdateRouteParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateRouteHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateRouteBodyDayOfWeekMin = 0;
+export const updateRouteBodyDayOfWeekMax = 6;
+
+export const UpdateRouteBody = zod.object({
+  name: zod.string().min(1).optional(),
+  truckId: zod.string().min(1).optional(),
+  dayOfWeek: zod
+    .number()
+    .min(updateRouteBodyDayOfWeekMin)
+    .max(updateRouteBodyDayOfWeekMax)
+    .optional(),
+  defaultDriverId: zod.string().nullish(),
+  active: zod.boolean().optional(),
+});
+
+export const updateRouteResponseDayOfWeekMin = 0;
+export const updateRouteResponseDayOfWeekMax = 6;
+
+export const updateRouteResponseStopsItemStopOrderMin = 0;
+
+export const UpdateRouteResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(updateRouteResponseDayOfWeekMin)
+    .max(updateRouteResponseDayOfWeekMax),
+  defaultDriverId: zod.string().nullable(),
+  defaultDriverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      routeId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod.number().min(updateRouteResponseStopsItemStopOrderMin),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Delete a route
+ */
+export const DeleteRouteParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const DeleteRouteHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+/**
+ * @summary Replace the ordered list of school stops for a route
+ */
+export const SetRouteStopsParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const SetRouteStopsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const SetRouteStopsBody = zod.object({
+  schoolIds: zod.array(zod.string()),
+});
+
+export const setRouteStopsResponseDayOfWeekMin = 0;
+export const setRouteStopsResponseDayOfWeekMax = 6;
+
+export const setRouteStopsResponseStopsItemStopOrderMin = 0;
+
+export const SetRouteStopsResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(setRouteStopsResponseDayOfWeekMin)
+    .max(setRouteStopsResponseDayOfWeekMax),
+  defaultDriverId: zod.string().nullable(),
+  defaultDriverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      routeId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod.number().min(setRouteStopsResponseStopsItemStopOrderMin),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary List route instances for a given week
+ */
+export const ListRouteInstancesQueryParams = zod.object({
+  weekStart: zod.coerce.string(),
+});
+
+export const ListRouteInstancesHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const listRouteInstancesResponseDayOfWeekMin = 0;
+export const listRouteInstancesResponseDayOfWeekMax = 6;
+
+export const listRouteInstancesResponseStopsItemStopOrderMin = 0;
+
+export const ListRouteInstancesResponseItem = zod.object({
+  id: zod.string(),
+  routeId: zod.string(),
+  routeName: zod.string(),
+  weekStart: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(listRouteInstancesResponseDayOfWeekMin)
+    .max(listRouteInstancesResponseDayOfWeekMax),
+  driverId: zod.string().nullable(),
+  driverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      instanceId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(listRouteInstancesResponseStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const ListRouteInstancesResponse = zod.array(
+  ListRouteInstancesResponseItem,
+);
+
+/**
+ * @summary Materialize route instances for the current (or specified) week from the default schedule
+ */
+export const MaterializeRouteInstancesHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const MaterializeRouteInstancesBody = zod.object({
+  weekStart: zod.string().optional(),
+});
+
+export const materializeRouteInstancesResponseDayOfWeekMin = 0;
+export const materializeRouteInstancesResponseDayOfWeekMax = 6;
+
+export const materializeRouteInstancesResponseStopsItemStopOrderMin = 0;
+
+export const MaterializeRouteInstancesResponseItem = zod.object({
+  id: zod.string(),
+  routeId: zod.string(),
+  routeName: zod.string(),
+  weekStart: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(materializeRouteInstancesResponseDayOfWeekMin)
+    .max(materializeRouteInstancesResponseDayOfWeekMax),
+  driverId: zod.string().nullable(),
+  driverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      instanceId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(materializeRouteInstancesResponseStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+export const MaterializeRouteInstancesResponse = zod.array(
+  MaterializeRouteInstancesResponseItem,
+);
+
+/**
+ * @summary Override truck, day, or driver for this week's instance
+ */
+export const UpdateRouteInstanceParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateRouteInstanceHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateRouteInstanceBodyDayOfWeekMin = 0;
+export const updateRouteInstanceBodyDayOfWeekMax = 6;
+
+export const UpdateRouteInstanceBody = zod.object({
+  truckId: zod.string().nullish(),
+  dayOfWeek: zod
+    .number()
+    .min(updateRouteInstanceBodyDayOfWeekMin)
+    .max(updateRouteInstanceBodyDayOfWeekMax)
+    .nullish(),
+  driverId: zod.string().nullish(),
+  active: zod.boolean().optional(),
+});
+
+export const updateRouteInstanceResponseDayOfWeekMin = 0;
+export const updateRouteInstanceResponseDayOfWeekMax = 6;
+
+export const updateRouteInstanceResponseStopsItemStopOrderMin = 0;
+
+export const UpdateRouteInstanceResponse = zod.object({
+  id: zod.string(),
+  routeId: zod.string(),
+  routeName: zod.string(),
+  weekStart: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(updateRouteInstanceResponseDayOfWeekMin)
+    .max(updateRouteInstanceResponseDayOfWeekMax),
+  driverId: zod.string().nullable(),
+  driverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      instanceId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(updateRouteInstanceResponseStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Replace the ordered list of school stops for a week instance
+ */
+export const SetRouteInstanceStopsParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const SetRouteInstanceStopsHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const setRouteInstanceStopsBodyStopsItemStopOrderMin = 0;
+
+export const SetRouteInstanceStopsBody = zod.object({
+  stops: zod.array(
+    zod.object({
+      schoolId: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(setRouteInstanceStopsBodyStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+});
+
+export const setRouteInstanceStopsResponseDayOfWeekMin = 0;
+export const setRouteInstanceStopsResponseDayOfWeekMax = 6;
+
+export const setRouteInstanceStopsResponseStopsItemStopOrderMin = 0;
+
+export const SetRouteInstanceStopsResponse = zod.object({
+  id: zod.string(),
+  routeId: zod.string(),
+  routeName: zod.string(),
+  weekStart: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(setRouteInstanceStopsResponseDayOfWeekMin)
+    .max(setRouteInstanceStopsResponseDayOfWeekMax),
+  driverId: zod.string().nullable(),
+  driverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      instanceId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(setRouteInstanceStopsResponseStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Skip or unskip a stop in a week instance
+ */
+export const UpdateRouteInstanceStopParams = zod.object({
+  id: zod.coerce.string(),
+  stopId: zod.coerce.string(),
+});
+
+export const UpdateRouteInstanceStopHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const updateRouteInstanceStopBodyStopOrderMin = 0;
+
+export const UpdateRouteInstanceStopBody = zod.object({
+  skipped: zod.boolean().optional(),
+  stopOrder: zod
+    .number()
+    .min(updateRouteInstanceStopBodyStopOrderMin)
+    .optional(),
+});
+
+export const updateRouteInstanceStopResponseDayOfWeekMin = 0;
+export const updateRouteInstanceStopResponseDayOfWeekMax = 6;
+
+export const updateRouteInstanceStopResponseStopsItemStopOrderMin = 0;
+
+export const UpdateRouteInstanceStopResponse = zod.object({
+  id: zod.string(),
+  routeId: zod.string(),
+  routeName: zod.string(),
+  weekStart: zod.string(),
+  truckId: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod
+    .number()
+    .min(updateRouteInstanceStopResponseDayOfWeekMin)
+    .max(updateRouteInstanceStopResponseDayOfWeekMax),
+  driverId: zod.string().nullable(),
+  driverName: zod.string().nullable(),
+  active: zod.boolean(),
+  stops: zod.array(
+    zod.object({
+      id: zod.string(),
+      instanceId: zod.string(),
+      schoolId: zod.string(),
+      schoolName: zod.string(),
+      stopOrder: zod
+        .number()
+        .min(updateRouteInstanceStopResponseStopsItemStopOrderMin),
+      skipped: zod.boolean(),
+    }),
+  ),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
+ * @summary Move a school from this instance to another route instance for the same week
+ */
+export const MoveSchoolToInstanceParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const MoveSchoolToInstanceHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const MoveSchoolToInstanceBody = zod.object({
+  schoolId: zod.string().min(1),
+  targetInstanceId: zod.string().min(1),
+});
+
+export const moveSchoolToInstanceResponseFromInstanceDayOfWeekMin = 0;
+export const moveSchoolToInstanceResponseFromInstanceDayOfWeekMax = 6;
+
+export const moveSchoolToInstanceResponseFromInstanceStopsItemStopOrderMin = 0;
+
+export const moveSchoolToInstanceResponseToInstanceDayOfWeekMin = 0;
+export const moveSchoolToInstanceResponseToInstanceDayOfWeekMax = 6;
+
+export const moveSchoolToInstanceResponseToInstanceStopsItemStopOrderMin = 0;
+
+export const MoveSchoolToInstanceResponse = zod.object({
+  fromInstance: zod.object({
+    id: zod.string(),
+    routeId: zod.string(),
+    routeName: zod.string(),
+    weekStart: zod.string(),
+    truckId: zod.string(),
+    truckName: zod.string(),
+    dayOfWeek: zod
+      .number()
+      .min(moveSchoolToInstanceResponseFromInstanceDayOfWeekMin)
+      .max(moveSchoolToInstanceResponseFromInstanceDayOfWeekMax),
+    driverId: zod.string().nullable(),
+    driverName: zod.string().nullable(),
+    active: zod.boolean(),
+    stops: zod.array(
+      zod.object({
+        id: zod.string(),
+        instanceId: zod.string(),
+        schoolId: zod.string(),
+        schoolName: zod.string(),
+        stopOrder: zod
+          .number()
+          .min(moveSchoolToInstanceResponseFromInstanceStopsItemStopOrderMin),
+        skipped: zod.boolean(),
+      }),
+    ),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+  toInstance: zod.object({
+    id: zod.string(),
+    routeId: zod.string(),
+    routeName: zod.string(),
+    weekStart: zod.string(),
+    truckId: zod.string(),
+    truckName: zod.string(),
+    dayOfWeek: zod
+      .number()
+      .min(moveSchoolToInstanceResponseToInstanceDayOfWeekMin)
+      .max(moveSchoolToInstanceResponseToInstanceDayOfWeekMax),
+    driverId: zod.string().nullable(),
+    driverName: zod.string().nullable(),
+    active: zod.boolean(),
+    stops: zod.array(
+      zod.object({
+        id: zod.string(),
+        instanceId: zod.string(),
+        schoolId: zod.string(),
+        schoolName: zod.string(),
+        stopOrder: zod
+          .number()
+          .min(moveSchoolToInstanceResponseToInstanceStopsItemStopOrderMin),
+        skipped: zod.boolean(),
+      }),
+    ),
+    createdAt: zod.coerce.date(),
+    updatedAt: zod.coerce.date(),
+  }),
+});
+
+/**
+ * @summary Get manifest data for a route instance (JSON)
+ */
+export const GetManifestParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const GetManifestHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const GetManifestResponse = zod.object({
+  instanceId: zod.string(),
+  routeName: zod.string(),
+  truckName: zod.string(),
+  dayOfWeek: zod.number(),
+  driverName: zod.string().nullable(),
+  weekStart: zod.string(),
+  totals: zod.array(
+    zod.object({
+      productId: zod.string().optional(),
+      productName: zod.string(),
+      total: zod.number(),
+    }),
+  ),
+  schools: zod.array(
+    zod.object({
+      schoolId: zod.string().optional(),
+      schoolName: zod.string(),
+      stopOrder: zod.number(),
+      skipped: zod.boolean(),
+      orderNotes: zod.string().nullable(),
+      items: zod.array(
+        zod.object({
+          productId: zod.string().optional(),
+          productName: zod.string(),
+          quantity: zod.number(),
+          note: zod.string().nullish(),
+        }),
+      ),
+    }),
+  ),
 });
 
 /**

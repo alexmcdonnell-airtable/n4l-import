@@ -12,6 +12,8 @@ import {
   useRemoveWeeklyOrderItem,
   useListProducts,
   getListProductsQueryKey,
+  useListRouteInstances,
+  getListRouteInstancesQueryKey,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,8 +43,14 @@ import {
   CheckCircle2,
   Circle,
   CircleDot,
+  Download,
+  ClipboardList,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+
+function getApiBase(): string {
+  return import.meta.env.BASE_URL.replace(/\/$/, "");
+}
 
 function mondayOf(d: Date): string {
   const u = new Date(
@@ -106,13 +114,88 @@ function StatusBadge({ status }: { status: string }) {
 }
 
 export default function WeeklyOrdersPage() {
+  const [activeTab, setActiveTab] = useState<"orders" | "manifests">("orders");
+  const [weekStart, setWeekStart] = useState<string>(() =>
+    mondayOf(new Date()),
+  );
+
+  return (
+    <div className="space-y-6">
+      <header className="flex items-end justify-between gap-4 flex-wrap">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            Weekly orders
+          </h1>
+          <p className="text-muted-foreground text-sm mt-1">
+            Manage orders and download route manifests for warehouse staff.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
+            data-testid="button-prev-week"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </Button>
+          <div className="text-sm font-medium tabular-nums px-2 min-w-[14rem] text-center">
+            {fmtWeek(weekStart)}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setWeekStart(shiftWeek(weekStart, +1))}
+            data-testid="button-next-week"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setWeekStart(mondayOf(new Date()))}
+            data-testid="button-this-week"
+          >
+            This week
+          </Button>
+        </div>
+      </header>
+
+      <div className="flex gap-1 border-b border-border">
+        <button
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === "orders"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setActiveTab("orders")}
+        >
+          Orders
+        </button>
+        <button
+          className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors flex items-center gap-1.5 ${
+            activeTab === "manifests"
+              ? "border-primary text-foreground"
+              : "border-transparent text-muted-foreground hover:text-foreground"
+          }`}
+          onClick={() => setActiveTab("manifests")}
+        >
+          <ClipboardList className="w-3.5 h-3.5" />
+          Manifests
+        </button>
+      </div>
+
+      {activeTab === "orders" && <OrdersTab weekStart={weekStart} />}
+      {activeTab === "manifests" && <ManifestsTab weekStart={weekStart} />}
+    </div>
+  );
+}
+
+function OrdersTab({ weekStart }: { weekStart: string }) {
   const qc = useQueryClient();
   const { data: auth } = useAuth();
   const isAdmin = auth?.role === "admin";
 
-  const [weekStart, setWeekStart] = useState<string>(() =>
-    mondayOf(new Date()),
-  );
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const [openSchool, setOpenSchool] = useState<{
     schoolId: string;
@@ -155,53 +238,13 @@ export default function WeeklyOrdersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <header className="flex items-end justify-between gap-4 flex-wrap">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">
-            Weekly orders
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">
-            One row per school for the chosen week. Click a row to open or
-            create the order.
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setWeekStart(shiftWeek(weekStart, -1))}
-            data-testid="button-prev-week"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </Button>
-          <div className="text-sm font-medium tabular-nums px-2 min-w-[14rem] text-center">
-            {fmtWeek(weekStart)}
-          </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setWeekStart(shiftWeek(weekStart, +1))}
-            data-testid="button-next-week"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setWeekStart(mondayOf(new Date()))}
-            data-testid="button-this-week"
-          >
-            This week
-          </Button>
-        </div>
-      </header>
-
+    <>
       <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
         <table className="w-full text-sm">
           <thead className="bg-secondary/60 text-muted-foreground">
             <tr>
               <th className="text-left font-medium px-4 py-2.5">School</th>
+              <th className="text-left font-medium px-4 py-2.5">Route</th>
               <th className="text-left font-medium px-4 py-2.5">Status</th>
               <th className="text-left font-medium px-4 py-2.5">Items</th>
               <th className="text-left font-medium px-4 py-2.5">Notes</th>
@@ -212,7 +255,7 @@ export default function WeeklyOrdersPage() {
             {list.isLoading && (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   Loading orders…
@@ -222,7 +265,7 @@ export default function WeeklyOrdersPage() {
             {!list.isLoading && (list.data?.length ?? 0) === 0 && (
               <tr>
                 <td
-                  colSpan={5}
+                  colSpan={6}
                   className="px-4 py-10 text-center text-muted-foreground"
                 >
                   No schools yet.
@@ -236,6 +279,20 @@ export default function WeeklyOrdersPage() {
                 data-testid={`row-week-order-${row.schoolId}`}
               >
                 <td className="px-4 py-3 font-medium">{row.schoolName}</td>
+                <td className="px-4 py-3">
+                  {row.routeName ? (
+                    <div>
+                      <span className="text-xs font-medium">{row.routeName}</span>
+                      {row.truckName && (
+                        <div className="text-xs text-muted-foreground">{row.truckName}</div>
+                      )}
+                    </div>
+                  ) : (
+                    <Badge variant="outline" className="text-xs text-muted-foreground/70">
+                      Unrouted
+                    </Badge>
+                  )}
+                </td>
                 <td className="px-4 py-3">
                   <StatusBadge status={row.status} />
                 </td>
@@ -271,6 +328,156 @@ export default function WeeklyOrdersPage() {
           setOpenSchool(null);
         }}
       />
+    </>
+  );
+}
+
+const DAY_NAMES = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
+function ManifestsTab({ weekStart }: { weekStart: string }) {
+  const instances = useListRouteInstances(
+    { weekStart },
+    { query: { queryKey: getListRouteInstancesQueryKey({ weekStart }) } },
+  );
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+
+  async function downloadPdf(instanceId: string, routeName: string) {
+    setDownloadingId(instanceId);
+    try {
+      const apiBase = getApiBase();
+      const resp = await fetch(
+        `${apiBase}/api/route-instances/${instanceId}/manifest.pdf`,
+        { credentials: "include" },
+      );
+      if (!resp.ok) throw new Error("Failed to download PDF");
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `manifest-${routeName.replace(/\s+/g, "-")}-${weekStart}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (e: unknown) {
+      toast({
+        title: e instanceof Error ? e.message : "Download failed",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingId(null);
+    }
+  }
+
+  const instanceList = instances.data ?? [];
+
+  return (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Download a packing manifest PDF for each route. Generate instances on
+        the Routes &amp; Trucks page if none appear below.
+      </p>
+      <div className="bg-card border border-card-border rounded-xl shadow-sm overflow-hidden">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/60 text-muted-foreground">
+            <tr>
+              <th className="text-left font-medium px-4 py-2.5">Route</th>
+              <th className="text-left font-medium px-4 py-2.5">Day</th>
+              <th className="text-left font-medium px-4 py-2.5">Truck</th>
+              <th className="text-left font-medium px-4 py-2.5">Driver</th>
+              <th className="text-left font-medium px-4 py-2.5">Stops</th>
+              <th className="text-right font-medium px-4 py-2.5">Manifest</th>
+            </tr>
+          </thead>
+          <tbody>
+            {instances.isLoading && (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-4 py-10 text-center text-muted-foreground"
+                >
+                  Loading…
+                </td>
+              </tr>
+            )}
+            {!instances.isLoading && instanceList.length === 0 && (
+              <tr>
+                <td
+                  colSpan={6}
+                  className="px-4 py-10 text-center text-muted-foreground"
+                >
+                  No route instances for this week. Go to Routes &amp; Trucks
+                  and click "Generate instances" first.
+                </td>
+              </tr>
+            )}
+            {instanceList.map((inst) => (
+              <tr key={inst.id} className="border-t border-border align-top">
+                <td className="px-4 py-3 font-medium">{inst.routeName}</td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {DAY_NAMES[inst.dayOfWeek] ?? "—"}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {inst.truckName}
+                </td>
+                <td className="px-4 py-3 text-muted-foreground">
+                  {inst.driverName ?? (
+                    <span className="text-muted-foreground/50">Unassigned</span>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  <div className="space-y-0.5">
+                    {inst.stops.length === 0 && (
+                      <span className="text-muted-foreground/50 text-xs">
+                        No stops
+                      </span>
+                    )}
+                    {inst.stops
+                      .slice()
+                      .sort((a, b) => a.stopOrder - b.stopOrder)
+                      .map((s) => (
+                        <div
+                          key={s.id}
+                          className={`text-xs ${s.skipped ? "line-through text-muted-foreground/50" : ""}`}
+                        >
+                          {s.stopOrder + 1}. {s.schoolName}
+                          {s.skipped && (
+                            <Badge
+                              variant="outline"
+                              className="ml-1 text-xs py-0"
+                            >
+                              skipped
+                            </Badge>
+                          )}
+                        </div>
+                      ))}
+                  </div>
+                </td>
+                <td className="px-4 py-3 text-right">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => downloadPdf(inst.id, inst.routeName)}
+                    disabled={downloadingId === inst.id}
+                    title="Download manifest PDF"
+                  >
+                    <Download
+                      className={`w-4 h-4 mr-1.5 ${downloadingId === inst.id ? "animate-pulse" : ""}`}
+                    />
+                    PDF
+                  </Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

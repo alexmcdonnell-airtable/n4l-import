@@ -137,10 +137,10 @@ router.post(
       res.status(400).json({ error: "Valid email is required" });
       return;
     }
-    if (role !== "admin" && role !== "staff" && role !== "warehouse") {
+    if (role !== "admin" && role !== "staff" && role !== "warehouse" && role !== "driver") {
       res
         .status(400)
-        .json({ error: "Role must be 'admin', 'staff', or 'warehouse'" });
+        .json({ error: "Role must be 'admin', 'staff', 'warehouse', or 'driver'" });
       return;
     }
 

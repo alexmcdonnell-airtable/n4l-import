@@ -6,3 +6,5 @@ export * from "./menuTemplates";
 export * from "./schoolDefaultMenu";
 export * from "./weeklyOrders";
 export * from "./appSettings";
+export * from "./trucks";
+export * from "./routes";

@@ -50,6 +50,8 @@ type School = {
   notes: string | null;
   accessUrl: string;
   tokenLastResetAt: string;
+  routeId?: string | null;
+  routeName?: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -225,6 +227,7 @@ export default function SchoolsPage() {
             <tr>
               <th className="text-left font-medium px-4 py-2.5">Name</th>
               <th className="text-left font-medium px-4 py-2.5">Contact</th>
+              <th className="text-left font-medium px-4 py-2.5">Route</th>
               <th className="text-left font-medium px-4 py-2.5">Access link</th>
               <th className="text-right font-medium px-4 py-2.5">Actions</th>
             </tr>
@@ -232,14 +235,14 @@ export default function SchoolsPage() {
           <tbody>
             {list.isLoading && (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                   Loading schools…
                 </td>
               </tr>
             )}
             {!list.isLoading && filtered.length === 0 && (
               <tr>
-                <td colSpan={4} className="px-4 py-10 text-center text-muted-foreground">
+                <td colSpan={5} className="px-4 py-10 text-center text-muted-foreground">
                   {search.trim()
                     ? "No schools match your search."
                     : "No schools yet. Add your first one to get started."}
@@ -262,6 +265,15 @@ export default function SchoolsPage() {
                     <div className="text-xs text-muted-foreground">
                       {s.contactEmail}
                     </div>
+                  )}
+                </td>
+                <td className="px-4 py-3">
+                  {s.routeName ? (
+                    <span className="text-xs font-medium text-foreground">
+                      {s.routeName}
+                    </span>
+                  ) : (
+                    <span className="text-xs text-muted-foreground/60">—</span>
                   )}
                 </td>
                 <td className="px-4 py-3 font-mono text-xs text-muted-foreground">

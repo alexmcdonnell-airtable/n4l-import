@@ -28,6 +28,12 @@ tags:
     description: Global application settings, including the order window.
   - name: WeeklyOrders
     description: Weekly order management for staff.
+  - name: Trucks
+    description: Delivery truck management.
+  - name: Routes
+    description: Default delivery route schedule and per-week instance management.
+  - name: Manifests
+    description: Per-route manifest PDF generation.
 paths:
   /healthz:
     get:
@@ -1039,6 +1045,383 @@ paths:
       responses:
         '204':
           description: Removed.
+  /trucks:
+    get:
+      tags: [Trucks]
+      operationId: listTrucks
+      summary: List all trucks
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: List of trucks.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Truck'
+    post:
+      tags: [Trucks]
+      operationId: createTruck
+      summary: Create a truck
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTruckBody'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Truck'
+  /trucks/{id}:
+    patch:
+      tags: [Trucks]
+      operationId: updateTruck
+      summary: Update a truck
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTruckBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Truck'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /routes:
+    get:
+      tags: [Routes]
+      operationId: listRoutes
+      summary: List all routes with their default stops
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: List of routes.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Route'
+    post:
+      tags: [Routes]
+      operationId: createRoute
+      summary: Create a route
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRouteBody'
+      responses:
+        '201':
+          description: Created.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+  /routes/{id}:
+    patch:
+      tags: [Routes]
+      operationId: updateRoute
+      summary: Update a route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRouteBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+    delete:
+      tags: [Routes]
+      operationId: deleteRoute
+      summary: Delete a route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /routes/{id}/stops:
+    put:
+      tags: [Routes]
+      operationId: setRouteStops
+      summary: Replace the ordered list of school stops for a route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetRouteStopsBody'
+      responses:
+        '200':
+          description: Stops updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Route'
+  /route-instances:
+    get:
+      tags: [Routes]
+      operationId: listRouteInstances
+      summary: List route instances for a given week
+      parameters:
+        - name: weekStart
+          in: query
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: List of route instances.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RouteInstance'
+  /route-instances/materialize:
+    post:
+      tags: [Routes]
+      operationId: materializeRouteInstances
+      summary: Materialize route instances for the current (or specified) week from the default schedule
+      parameters:
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MaterializeBody'
+      responses:
+        '200':
+          description: Instances created or already existed.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RouteInstance'
+  /route-instances/{id}:
+    patch:
+      tags: [Routes]
+      operationId: updateRouteInstance
+      summary: Override truck, day, or driver for this week's instance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateRouteInstanceBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteInstance'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /route-instances/{id}/stops:
+    put:
+      tags: [Routes]
+      operationId: setRouteInstanceStops
+      summary: Replace the ordered list of school stops for a week instance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetInstanceStopsBody'
+      responses:
+        '200':
+          description: Stops updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteInstance'
+  /route-instances/{id}/stops/{stopId}:
+    patch:
+      tags: [Routes]
+      operationId: updateRouteInstanceStop
+      summary: Skip or unskip a stop in a week instance
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: stopId
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateInstanceStopBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RouteInstance'
+  /route-instances/{id}/move-school:
+    post:
+      tags: [Routes]
+      operationId: moveSchoolToInstance
+      summary: Move a school from this instance to another route instance for the same week
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MoveSchoolBody'
+      responses:
+        '200':
+          description: Moved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [fromInstance, toInstance]
+                properties:
+                  fromInstance:
+                    $ref: '#/components/schemas/RouteInstance'
+                  toInstance:
+                    $ref: '#/components/schemas/RouteInstance'
+  /route-instances/{id}/manifest:
+    get:
+      tags: [Manifests]
+      operationId: getManifest
+      summary: Get manifest data for a route instance (JSON)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      responses:
+        '200':
+          description: Manifest data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Manifest'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /school-portal/{token}:
     get:
       tags: [SchoolPortal]
@@ -1273,7 +1656,7 @@ components:
             - type: 'null'
         role:
           type: [string, 'null']
-          enum: [admin, staff, warehouse, null]
+          enum: [admin, staff, warehouse, driver, null]
         active:
           type: boolean
     MobileTokenExchangeRequest:
@@ -1326,6 +1709,8 @@ components:
           type: string
           description: Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).
         tokenLastResetAt: { type: string, format: date-time }
+        routeId: { type: [string, 'null'] }
+        routeName: { type: [string, 'null'] }
         createdAt: { type: string, format: date-time }
         updatedAt: { type: string, format: date-time }
     SchoolWithToken:
@@ -1391,7 +1776,7 @@ components:
         profileImageUrl: { type: [string, 'null'] }
         role:
           type: string
-          enum: [admin, staff, warehouse]
+          enum: [admin, staff, warehouse, driver]
         active: { type: boolean }
         status:
           type: string
@@ -1403,7 +1788,7 @@ components:
       properties:
         role:
           type: string
-          enum: [admin, staff, warehouse]
+          enum: [admin, staff, warehouse, driver]
         active: { type: boolean }
     InviteStaffBody:
       type: object
@@ -1415,7 +1800,7 @@ components:
           minLength: 1
         role:
           type: string
-          enum: [admin, staff, warehouse]
+          enum: [admin, staff, warehouse, driver]
     Product:
       type: object
       required:
@@ -1605,6 +1990,11 @@ components:
         itemCount: { type: integer, minimum: 0 }
         notesPreview: { type: [string, 'null'] }
         confirmedAt: { type: [string, 'null'], format: date-time }
+        routeWeekInstanceId: { type: [string, 'null'] }
+        routeName: { type: [string, 'null'] }
+        truckName: { type: [string, 'null'] }
+        dayOfWeek: { type: [integer, 'null'] }
+        driverName: { type: [string, 'null'] }
     UpdateWeeklyOrderBody:
       type: object
       properties:
@@ -1651,3 +2041,182 @@ components:
           oneOf:
             - $ref: '#/components/schemas/WeeklyOrder'
             - type: 'null'
+    Truck:
+      type: object
+      required: [id, name, active, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        active: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateTruckBody:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1 }
+    UpdateTruckBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        active: { type: boolean }
+    RouteStop:
+      type: object
+      required: [id, routeId, schoolId, schoolName, stopOrder]
+      properties:
+        id: { type: string }
+        routeId: { type: string }
+        schoolId: { type: string }
+        schoolName: { type: string }
+        stopOrder: { type: integer, minimum: 0 }
+    Route:
+      type: object
+      required: [id, name, truckId, truckName, dayOfWeek, defaultDriverId, defaultDriverName, active, stops, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        truckId: { type: string }
+        truckName: { type: string }
+        dayOfWeek: { type: integer, minimum: 0, maximum: 6 }
+        defaultDriverId: { type: [string, 'null'] }
+        defaultDriverName: { type: [string, 'null'] }
+        active: { type: boolean }
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/RouteStop'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    CreateRouteBody:
+      type: object
+      required: [name, truckId, dayOfWeek]
+      properties:
+        name: { type: string, minLength: 1 }
+        truckId: { type: string, minLength: 1 }
+        dayOfWeek: { type: integer, minimum: 0, maximum: 6 }
+        defaultDriverId: { type: [string, 'null'] }
+    UpdateRouteBody:
+      type: object
+      properties:
+        name: { type: string, minLength: 1 }
+        truckId: { type: string, minLength: 1 }
+        dayOfWeek: { type: integer, minimum: 0, maximum: 6 }
+        defaultDriverId: { type: [string, 'null'] }
+        active: { type: boolean }
+    SetRouteStopsBody:
+      type: object
+      required: [schoolIds]
+      properties:
+        schoolIds:
+          type: array
+          items:
+            type: string
+    InstanceStop:
+      type: object
+      required: [id, instanceId, schoolId, schoolName, stopOrder, skipped]
+      properties:
+        id: { type: string }
+        instanceId: { type: string }
+        schoolId: { type: string }
+        schoolName: { type: string }
+        stopOrder: { type: integer, minimum: 0 }
+        skipped: { type: boolean }
+    RouteInstance:
+      type: object
+      required: [id, routeId, routeName, weekStart, truckId, truckName, dayOfWeek, driverId, driverName, active, stops, createdAt, updatedAt]
+      properties:
+        id: { type: string }
+        routeId: { type: string }
+        routeName: { type: string }
+        weekStart: { type: string }
+        truckId: { type: string }
+        truckName: { type: string }
+        dayOfWeek: { type: integer, minimum: 0, maximum: 6 }
+        driverId: { type: [string, 'null'] }
+        driverName: { type: [string, 'null'] }
+        active: { type: boolean }
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/InstanceStop'
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    MaterializeBody:
+      type: object
+      properties:
+        weekStart: { type: string }
+    UpdateRouteInstanceBody:
+      type: object
+      properties:
+        truckId: { type: [string, 'null'] }
+        dayOfWeek: { type: [integer, 'null'], minimum: 0, maximum: 6 }
+        driverId: { type: [string, 'null'] }
+        active: { type: boolean }
+    SetInstanceStopsBody:
+      type: object
+      required: [stops]
+      properties:
+        stops:
+          type: array
+          items:
+            type: object
+            required: [schoolId, stopOrder, skipped]
+            properties:
+              schoolId: { type: string }
+              stopOrder: { type: integer, minimum: 0 }
+              skipped: { type: boolean }
+    UpdateInstanceStopBody:
+      type: object
+      properties:
+        skipped: { type: boolean }
+        stopOrder: { type: integer, minimum: 0 }
+    MoveSchoolBody:
+      type: object
+      required: [schoolId, targetInstanceId]
+      properties:
+        schoolId: { type: string, minLength: 1 }
+        targetInstanceId: { type: string, minLength: 1 }
+    ManifestSchoolPage:
+      type: object
+      required: [schoolName, stopOrder, skipped, orderNotes, items]
+      properties:
+        schoolId: { type: string }
+        schoolName: { type: string }
+        stopOrder: { type: integer }
+        skipped: { type: boolean }
+        orderNotes: { type: [string, 'null'] }
+        items:
+          type: array
+          items:
+            type: object
+            required: [productName, quantity]
+            properties:
+              productId: { type: string }
+              productName: { type: string }
+              quantity: { type: integer }
+              note: { type: [string, 'null'] }
+    ManifestTotalLine:
+      type: object
+      required: [productName, total]
+      properties:
+        productId: { type: string }
+        productName: { type: string }
+        total: { type: integer }
+    Manifest:
+      type: object
+      required: [instanceId, routeName, truckName, dayOfWeek, driverName, weekStart, totals, schools]
+      properties:
+        instanceId: { type: string }
+        routeName: { type: string }
+        truckName: { type: string }
+        dayOfWeek: { type: integer }
+        driverName: { type: [string, 'null'] }
+        weekStart: { type: string }
+        totals:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManifestTotalLine'
+        schools:
+          type: array
+          items:
+            $ref: '#/components/schemas/ManifestSchoolPage'

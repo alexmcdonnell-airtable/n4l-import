@@ -25,6 +25,7 @@ import MenuTemplatesPage from "@/pages/menu-templates";
 import SchoolDefaultsPage from "@/pages/school-defaults";
 import WeeklyOrdersPage from "@/pages/weekly-orders";
 import SettingsPage from "@/pages/settings";
+import RoutesPage from "@/pages/routes";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,6 +42,7 @@ const PAGE_COMPONENTS: Record<string, React.ComponentType> = {
   staff: StaffPage,
   inventory: InventoryPage,
   orders: WeeklyOrdersPage,
+  routes: RoutesPage,
   settings: SettingsPage,
 };
 

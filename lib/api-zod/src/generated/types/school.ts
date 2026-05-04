@@ -20,6 +20,10 @@ export interface School {
   /** Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token). */
   accessUrl: string;
   tokenLastResetAt: Date;
+  /** @nullable */
+  routeId?: string | null;
+  /** @nullable */
+  routeName?: string | null;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -13,4 +13,5 @@ export const StaffMemberRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;

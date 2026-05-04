@@ -13,4 +13,5 @@ export const UpdateStaffBodyRole = {
   admin: "admin",
   staff: "staff",
   warehouse: "warehouse",
+  driver: "driver",
 } as const;

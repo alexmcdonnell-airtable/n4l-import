@@ -1,5 +1,8 @@
 import app from "./app";
 import { logger } from "./lib/logger";
+import cron from "node-cron";
+import { materializeWeek } from "./lib/routeHelpers";
+import { currentWeekMonday } from "./lib/orderHelpers";
 
 const rawPort = process.env["PORT"];
 
@@ -22,4 +25,23 @@ app.listen(port, (err) => {
   }
 
   logger.info({ port }, "Server listening");
+
+  // Every Monday at 00:01 UTC, auto-materialize route instances for the current week
+  cron.schedule(
+    "1 0 * * 1",
+    async () => {
+      const weekStart = currentWeekMonday();
+      logger.info({ weekStart }, "Scheduled: materializing route instances");
+      try {
+        const instances = await materializeWeek(weekStart);
+        logger.info(
+          { weekStart, count: instances.length },
+          "Scheduled: route instances materialized",
+        );
+      } catch (err) {
+        logger.error({ err, weekStart }, "Scheduled: materialize failed");
+      }
+    },
+    { timezone: "UTC" },
+  );
 });
