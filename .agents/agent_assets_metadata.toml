@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "87rrcGVhvYJi9t_FNHGzS"
+uri = "file://nutrition-for-learning.zip"
+type = "unspecified"
+title = "Nutrition for Learning — source code"
