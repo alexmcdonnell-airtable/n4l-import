@@ -7,11 +7,20 @@ import {
   useUpdateSchool,
   useDeleteSchool,
   useResetSchoolToken,
+  useUpdateSchoolRoute,
+  useListRoutes,
 } from "@workspace/api-client-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -62,6 +71,7 @@ type FormState = {
   contactEmail: string;
   address: string;
   notes: string;
+  routeId: string | null;
 };
 
 const emptyForm: FormState = {
@@ -70,7 +80,10 @@ const emptyForm: FormState = {
   contactEmail: "",
   address: "",
   notes: "",
+  routeId: null,
 };
+
+const NO_ROUTE = "__none__";
 
 function toFormState(s: School): FormState {
   return {
@@ -79,6 +92,7 @@ function toFormState(s: School): FormState {
     contactEmail: s.contactEmail ?? "",
     address: s.address ?? "",
     notes: s.notes ?? "",
+    routeId: s.routeId ?? null,
   };
 }
 
@@ -101,10 +115,12 @@ export default function SchoolsPage() {
   const [confirmReset, setConfirmReset] = useState<School | null>(null);
 
   const list = useListSchools({ query: { queryKey: getListSchoolsQueryKey() } });
+  const routesList = useListRoutes();
   const createMut = useCreateSchool();
   const updateMut = useUpdateSchool();
   const deleteMut = useDeleteSchool();
   const resetMut = useResetSchoolToken();
+  const routeMut = useUpdateSchoolRoute();
 
   const filtered = useMemo(() => {
     const data = list.data ?? [];
@@ -148,6 +164,12 @@ export default function SchoolsPage() {
     try {
       if (editing) {
         await updateMut.mutateAsync({ id: editing.id, data: body });
+        if ((editing.routeId ?? null) !== (form.routeId ?? null)) {
+          await routeMut.mutateAsync({
+            id: editing.id,
+            data: { routeId: form.routeId },
+          });
+        }
         toast({ title: "School updated" });
       } else {
         await createMut.mutateAsync({ data: body });
@@ -380,6 +402,33 @@ export default function SchoolsPage() {
                 onChange={(e) => setForm({ ...form, notes: e.target.value })}
               />
             </div>
+            {editing && (
+              <div className="grid gap-1.5">
+                <Label htmlFor="route">Default route</Label>
+                <Select
+                  value={form.routeId ?? NO_ROUTE}
+                  onValueChange={(v) =>
+                    setForm({ ...form, routeId: v === NO_ROUTE ? null : v })
+                  }
+                >
+                  <SelectTrigger id="route">
+                    <SelectValue placeholder="Unassigned" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={NO_ROUTE}>Unassigned</SelectItem>
+                    {(routesList.data ?? []).map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  The route this school is delivered on by default. Changes
+                  apply to the current week's order if one exists.
+                </p>
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setCreateOpen(false)}>
@@ -387,7 +436,11 @@ export default function SchoolsPage() {
             </Button>
             <Button
               onClick={handleSubmit}
-              disabled={createMut.isPending || updateMut.isPending}
+              disabled={
+                createMut.isPending ||
+                updateMut.isPending ||
+                routeMut.isPending
+              }
             >
               {editing ? "Save changes" : "Create school"}
             </Button>

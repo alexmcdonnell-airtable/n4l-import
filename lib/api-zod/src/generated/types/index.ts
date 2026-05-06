@@ -64,6 +64,7 @@ export * from "./updateProductBody";
 export * from "./updateRouteBody";
 export * from "./updateRouteInstanceBody";
 export * from "./updateSchoolBody";
+export * from "./updateSchoolRouteBody";
 export * from "./updateStaffBody";
 export * from "./updateStaffBodyRole";
 export * from "./updateTruckBody";

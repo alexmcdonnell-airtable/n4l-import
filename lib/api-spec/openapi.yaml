@@ -322,6 +322,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorEnvelope'
+  /schools/{id}/route:
+    patch:
+      tags: [Schools]
+      operationId: updateSchoolRoute
+      summary: Assign or clear the school's default route
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+        - $ref: '#/components/parameters/AuthorizationSessionHeader'
+        - $ref: '#/components/parameters/SessionCookie'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateSchoolRouteBody'
+      responses:
+        '200':
+          description: Updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/School'
+        '404':
+          description: Not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
   /schools/{id}/default-menu:
     get:
       tags: [SchoolDefaults]
@@ -1755,6 +1787,13 @@ components:
         contactEmail: { type: [string, 'null'], format: email }
         address: { type: [string, 'null'] }
         notes: { type: [string, 'null'] }
+    UpdateSchoolRouteBody:
+      type: object
+      required: [routeId]
+      properties:
+        routeId:
+          type: [string, 'null']
+          description: Route id to assign as the school's default route, or null to clear.
     StaffMember:
       type: object
       required:

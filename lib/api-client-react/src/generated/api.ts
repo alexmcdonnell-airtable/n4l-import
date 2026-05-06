@@ -63,6 +63,7 @@ import type {
   UpdateRouteBody,
   UpdateRouteInstanceBody,
   UpdateSchoolBody,
+  UpdateSchoolRouteBody,
   UpdateStaffBody,
   UpdateTruckBody,
   UpdateWeeklyOrderBody,
@@ -1180,6 +1181,93 @@ export const useResetSchoolToken = <
   TContext
 > => {
   return useMutation(getResetSchoolTokenMutationOptions(options));
+};
+
+/**
+ * @summary Assign or clear the school's default route
+ */
+export const getUpdateSchoolRouteUrl = (id: string) => {
+  return `/api/schools/${id}/route`;
+};
+
+export const updateSchoolRoute = async (
+  id: string,
+  updateSchoolRouteBody: UpdateSchoolRouteBody,
+  options?: RequestInit,
+): Promise<School> => {
+  return customFetch<School>(getUpdateSchoolRouteUrl(id), {
+    ...options,
+    method: "PATCH",
+    headers: { "Content-Type": "application/json", ...options?.headers },
+    body: JSON.stringify(updateSchoolRouteBody),
+  });
+};
+
+export const getUpdateSchoolRouteMutationOptions = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSchoolRoute>>,
+    TError,
+    { id: string; data: BodyType<UpdateSchoolRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationOptions<
+  Awaited<ReturnType<typeof updateSchoolRoute>>,
+  TError,
+  { id: string; data: BodyType<UpdateSchoolRouteBody> },
+  TContext
+> => {
+  const mutationKey = ["updateSchoolRoute"];
+  const { mutation: mutationOptions, request: requestOptions } = options
+    ? options.mutation &&
+      "mutationKey" in options.mutation &&
+      options.mutation.mutationKey
+      ? options
+      : { ...options, mutation: { ...options.mutation, mutationKey } }
+    : { mutation: { mutationKey }, request: undefined };
+
+  const mutationFn: MutationFunction<
+    Awaited<ReturnType<typeof updateSchoolRoute>>,
+    { id: string; data: BodyType<UpdateSchoolRouteBody> }
+  > = (props) => {
+    const { id, data } = props ?? {};
+
+    return updateSchoolRoute(id, data, requestOptions);
+  };
+
+  return { mutationFn, ...mutationOptions };
+};
+
+export type UpdateSchoolRouteMutationResult = NonNullable<
+  Awaited<ReturnType<typeof updateSchoolRoute>>
+>;
+export type UpdateSchoolRouteMutationBody = BodyType<UpdateSchoolRouteBody>;
+export type UpdateSchoolRouteMutationError = ErrorType<ErrorEnvelope>;
+
+/**
+ * @summary Assign or clear the school's default route
+ */
+export const useUpdateSchoolRoute = <
+  TError = ErrorType<ErrorEnvelope>,
+  TContext = unknown,
+>(options?: {
+  mutation?: UseMutationOptions<
+    Awaited<ReturnType<typeof updateSchoolRoute>>,
+    TError,
+    { id: string; data: BodyType<UpdateSchoolRouteBody> },
+    TContext
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseMutationResult<
+  Awaited<ReturnType<typeof updateSchoolRoute>>,
+  TError,
+  { id: string; data: BodyType<UpdateSchoolRouteBody> },
+  TContext
+> => {
+  return useMutation(getUpdateSchoolRouteMutationOptions(options));
 };
 
 /**

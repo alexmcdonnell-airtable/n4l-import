@@ -134,6 +134,14 @@ export interface UpdateSchoolBody {
   notes?: string | null;
 }
 
+export interface UpdateSchoolRouteBody {
+  /**
+   * Route id to assign as the school's default route, or null to clear.
+   * @nullable
+   */
+  routeId: string | null;
+}
+
 export type StaffMemberRole =
   (typeof StaffMemberRole)[keyof typeof StaffMemberRole];
 

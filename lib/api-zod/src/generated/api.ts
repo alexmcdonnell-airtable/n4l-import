@@ -282,6 +282,48 @@ export const ResetSchoolTokenResponse = zod
   );
 
 /**
+ * @summary Assign or clear the school's default route
+ */
+export const UpdateSchoolRouteParams = zod.object({
+  id: zod.coerce.string(),
+});
+
+export const UpdateSchoolRouteHeader = zod.object({
+  Authorization: zod
+    .string()
+    .optional()
+    .describe("Opaque session token — `Bearer <sid>`."),
+});
+
+export const UpdateSchoolRouteBody = zod.object({
+  routeId: zod
+    .string()
+    .nullable()
+    .describe(
+      "Route id to assign as the school's default route, or null to clear.",
+    ),
+});
+
+export const UpdateSchoolRouteResponse = zod.object({
+  id: zod.string(),
+  name: zod.string(),
+  contactName: zod.string().nullable(),
+  contactEmail: zod.string().email().nullable(),
+  address: zod.string().nullable(),
+  notes: zod.string().nullable(),
+  accessUrl: zod
+    .string()
+    .describe(
+      "Full shareable URL for the school portal (available to authenticated staff; built from the stored plain-text access token).",
+    ),
+  tokenLastResetAt: zod.coerce.date(),
+  routeId: zod.string().nullish(),
+  routeName: zod.string().nullish(),
+  createdAt: zod.coerce.date(),
+  updatedAt: zod.coerce.date(),
+});
+
+/**
  * @summary List the school's default menu items
  */
 export const GetSchoolDefaultMenuParams = zod.object({
